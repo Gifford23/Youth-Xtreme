@@ -1,73 +1,44 @@
-# React + TypeScript + Vite
+# Youth Xtreme CDO 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The official web application for **Youth Xtreme**, a youth ministry based in Cagayan de Oro, Philippines. This platform helps connect students, track events, and manage ministry resources.
 
-Currently, two official plugins are available:
+## 🌟 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Event Tracking:** Real-time feed of upcoming worship services and gatherings.
+- **Admin Dashboard:** Restricted interface for leaders to publish new events.
+- **Responsive Design:** Fully mobile-optimized for youth on the go.
+- **Fast Performance:** Built with modern tooling for instant load times.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend:** [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Backend:** [Firebase](https://firebase.google.com/) (Firestore & Analytics)
+- **Language:** TypeScript
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1.  **Clone the repository**
+    ```bash
+    git clone [https://github.com/Gifford23/Youth-Xtreme.git](https://github.com/Gifford23/Youth-Xtreme.git)
+    ```
+2.  **Install dependencies**
+    ```bash
+    cd Youth-Xtreme/frontend
+    npm install
+    ```
+3.  **Setup Environment Variables**
+    Create a `.env.local` file in the `frontend` directory with your Firebase keys:
+    ```env
+    VITE_FIREBASE_API_KEY=your_key
+    VITE_FIREBASE_AUTH_DOMAIN=your_domain
+    ...
+    ```
+4.  **Run the app**
+    ```bash
+    npm run dev
+    ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📱 Connect with Us
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Facebook:** [@yxcdo](https://www.facebook.com/yxcdo)
