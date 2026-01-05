@@ -4,7 +4,7 @@ import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 import SproutIcon from "../../assets/sprout.png";
-import Logo from "../../assets/logo4.png"; // ✅ Ensure this file exists
+import Logo from "../../assets/Official-logo.png"; // ✅ Ensure this file exists
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
