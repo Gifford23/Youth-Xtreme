@@ -1,28 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, // ✅ New Import
+  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  updateProfile, // ✅ To save their name
+  updateProfile,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
+import Logo from "../assets/Official-logo.png";
+
+// 📸 BACKGROUND IMAGES LIST
+const backgroundImages = [
+  "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop", // First Image
+  "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/548220661_1093330282877553_682378857481286695_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PZHkG5oFXm0Q7kNvwHAEBIQ&_nc_oc=AdnK2mxb7yuTNMyiEXDiPEGNA-jBiPeUiVVVzsjIZkGJEkyOo8eFTZpbzjSw1fO3idI&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=4kc4-8tLvpA4p6DvxuMfKQ&oh=00_AfqRH4KmkVFdZ3gvD7SC8yr4IbE0CpTf1cgiiJpsuu_XWQ&oe=696181AF", // Second Image
+  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/548403682_1093330362877545_845517022796782631_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=sZL-v7qkg2oQ7kNvwGH4vwg&_nc_oc=AdkIiBSDYBPjz_iN8TOWLzRR5K3-PimYkjUcwCZODrX27tAnfCK_lHNZ_LeMwtK4nFg&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=OlzyATU_d5ciyrdt3EvR7A&oh=00_Afo4mvc0OqqEru2bY4Jn2gvbq2Wvd6dxqZuRwUD3KLwdeQ&oe=696193CE", // Third Image
+  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/517952902_1039160238294558_8204969679638417153_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PIe29dJbHU0Q7kNvwEfGxGQ&_nc_oc=AdnqK8aINpdWgM0q5K5CJ86vRoGjYdAQEqzvQTM6Z5k9VpYdtea4uICGLTZEGVBBb9o&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=y-Tjtbh3Du4ia-YtAL2q-w&oh=00_AfpNavhC13QMAB2GmMOenDG1F_GxXSqUuEDgElDavDTbXg&oe=6961A985", // Fourth Image
+];
 
 const Login = () => {
   const navigate = useNavigate();
 
   // Toggle State
-  const [isSignUp, setIsSignUp] = useState(false); // Default to Login
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // 🔄 Track Active Image
 
   // Form Fields
-  const [name, setName] = useState(""); // Only for Sign Up
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 🔄 CAROUSEL EFFECT (30 Seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // --- TRAFFIC COP & PROFILE CREATOR ---
   const handleUserRouting = async (user: any) => {
@@ -30,7 +51,6 @@ const Login = () => {
     const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists()) {
-      // 1. EXISTING USER: Check Role
       const role = userDoc.data().role;
       if (role === "admin") {
         navigate("/admin");
@@ -38,15 +58,14 @@ const Login = () => {
         navigate("/");
       }
     } else {
-      // 2. NEW USER: Create "Youth" Profile
       await setDoc(userDocRef, {
         email: user.email,
-        role: "youth", // Default role
+        role: "youth",
         created_at: serverTimestamp(),
-        name: user.displayName || name || "Youth Member", // Use Name from form or Google
+        name: user.displayName || name || "Youth Member",
         photo_url: user.photoURL || "",
       });
-      navigate("/"); // Send new youth to Home
+      navigate("/");
     }
   };
 
@@ -57,18 +76,14 @@ const Login = () => {
 
     try {
       if (isSignUp) {
-        // --- SIGN UP LOGIC ---
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
           password
         );
-        // Save their real name to Firebase Auth profile
         await updateProfile(userCredential.user, { displayName: name });
-        // Create Firestore Profile
         await handleUserRouting(userCredential.user);
       } else {
-        // --- SIGN IN LOGIC ---
         const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
@@ -108,23 +123,36 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-brand-dark">
-      {/* Visuals */}
+      {/* Visuals - Dynamic Slideshow */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-brand-accent/10 z-10"></div>
-        <img
-          src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop"
-          alt="Youth Crowd"
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
-        />
-        <div className="relative z-20 flex flex-col justify-between p-12 w-full">
+        <div className="absolute inset-0 bg-brand-accent/10 z-20"></div>
+
+        {/* Render ALL images stacked, but fade opacity */}
+        {backgroundImages.map((imgUrl, index) => (
+          <img
+            key={index}
+            src={imgUrl}
+            alt={`Slide ${index}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              index === currentImageIndex ? "opacity-60" : "opacity-0"
+            }`}
+          />
+        ))}
+
+        <div className="relative z-30 flex flex-col justify-between p-12 w-full">
           <div>
-            <div className="w-12 h-12 bg-brand-accent rounded-xl flex items-center justify-center font-bold text-brand-dark text-xl mb-6">
-              YX
+            <div className="mb-6">
+              <img
+                src={Logo}
+                alt="Youth Xtreme Logo"
+                className="h-16 w-auto object-contain"
+              />
             </div>
-            <h1 className="text-5xl font-display font-bold text-white mb-4">
+
+            <h1 className="text-5xl font-display font-bold text-white mb-4 drop-shadow-lg">
               {isSignUp ? "JOIN THE\nFAMILY." : "WELCOME\nBACK."}
             </h1>
-            <p className="text-brand-muted text-lg max-w-md">
+            <p className="text-brand-muted text-lg max-w-md drop-shadow-md">
               {isSignUp
                 ? "Create an account to RSVP for events, track your growth, and access exclusive content."
                 : "Sign in to access your dashboard and stay connected with the community."}
@@ -137,6 +165,14 @@ const Login = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="max-w-md w-full">
           <div className="text-center lg:text-left mb-10">
+            <div className="lg:hidden mb-6 flex justify-center">
+              <img
+                src={Logo}
+                alt="Youth Xtreme Logo"
+                className="h-14 w-auto object-contain"
+              />
+            </div>
+
             <h2 className="text-3xl font-display font-bold text-white mb-2">
               {isSignUp ? "Create Account" : "Member Login"}
             </h2>
@@ -183,7 +219,6 @@ const Login = () => {
             </div>
 
             <form onSubmit={handleAuth} className="space-y-4">
-              {/* NAME FIELD (Only visible when Signing Up) */}
               {isSignUp && (
                 <div className="animate-fade-in-down">
                   <input
@@ -232,7 +267,6 @@ const Login = () => {
             </form>
           </div>
 
-          {/* TOGGLE SWITCH */}
           <div className="mt-8 text-center pt-6 border-t border-white/5">
             <p className="text-brand-muted mb-2">
               {isSignUp
@@ -242,7 +276,7 @@ const Login = () => {
             <button
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                setError(""); // Clear errors when switching
+                setError("");
               }}
               className="text-sm font-bold text-white hover:text-brand-accent transition-colors uppercase tracking-widest"
             >
