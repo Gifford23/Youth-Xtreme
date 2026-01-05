@@ -22,6 +22,7 @@ import Calendar from "./pages/Calendar";
 import PrayerWall from "./pages/PrayerWall";
 import ConnectCard from "./pages/ConnectCard";
 import Media from "./pages/Media";
+import Journey from "./pages/Journey";
 
 // 1. Create a Layout for Public Pages (Navbar + Content)
 const PublicLayout = () => {
@@ -77,6 +78,7 @@ function App() {
             <Route path="/prayer-wall" element={<PrayerWall />} />
             <Route path="/connect" element={<ConnectCard />} />
             <Route path="/media" element={<Media />} />
+            <Route path="/journey" element={<Journey />} />
           </Route>
 
           {/* Group B: Standalone Routes (No Navbar) */}

@@ -1,21 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Global Reset for a dark theme */
-body {
-  @apply bg-brand-dark text-brand-text font-sans antialiased;
+@layer base {
+  :root {
+    /* DEFAULT THEME: NEON DARK (Matches your current tailwind.config.js) */
+    --color-bg-dark: 10 10 10; /* #0a0a0a */
+    --color-bg-gray: 23 23 23; /* #171717 */
+    --color-accent: 204 255 0; /* #CCFF00 */
+    --color-text: 237 237 237; /* #ededed */
+    --color-muted: 163 163 163; /* #a3a3a3 */
+  }
+
+  /* ALTERNATE THEME: BLACK & WHITE (Streetwear Style) */
+  [data-theme="bw"] {
+    --color-bg-dark: 255 255 255; /* White Background */
+    --color-bg-gray: 245 245 245; /* Light Gray Secondary */
+    --color-accent: 0 0 0; /* Black Accent */
+    --color-text: 0 0 0; /* Black Text */
+    --color-muted: 100 100 100; /* Dark Gray Muted */
+  }
+
+  body {
+    @apply bg-brand-dark text-brand-text transition-colors duration-500;
+  }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-brand-dark;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-brand-gray rounded-full;
+/* Add global font smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

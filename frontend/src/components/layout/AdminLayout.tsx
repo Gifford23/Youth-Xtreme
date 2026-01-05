@@ -4,7 +4,10 @@ import {
   type ReactNode,
   type SVGProps,
 } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom"; // Added useNavigate
+import { signOut } from "firebase/auth"; // Added signOut
+import { auth } from "../../lib/firebase"; // Added auth
+import ThemeToggle from "../common/ThemeToggle";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -12,12 +15,26 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate(); // Hook for redirection
 
   const navItems = [
     { to: "/", label: "Home", Icon: HomeIcon },
     { to: "/events", label: "Events", Icon: CalendarIcon },
     { to: "/admin", label: "Admin", Icon: SettingsIcon },
   ];
+
+  // ✅ LOGOUT FUNCTION
+  const handleLogout = async () => {
+    if (window.confirm("Are you sure you want to sign out?")) {
+      try {
+        await signOut(auth);
+        navigate("/login"); // Redirect to Login page
+      } catch (error) {
+        console.error("Error signing out:", error);
+        alert("Failed to sign out.");
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
@@ -50,10 +67,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
 
           {/* 2. Navigation Links */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col">
             <div className="px-3 text-[11px] font-bold uppercase tracking-widest text-brand-muted mb-4">
               Main Menu
             </div>
+
             <nav className="space-y-1">
               {navItems.map(({ to, label, Icon }) => (
                 <NavLink
@@ -73,6 +91,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 </NavLink>
               ))}
             </nav>
+
+            {/* ✅ LOGOUT BUTTON (Pushed to bottom of this section) */}
+            <div className="mt-auto pt-8">
+              <button
+                onClick={handleLogout}
+                className="w-full group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+              >
+                <LogoutIcon className="w-5 h-5" />
+                Sign Out
+              </button>
+            </div>
           </div>
 
           {/* 3. Sidebar Footer (Copyright) */}
@@ -88,7 +117,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0">
-          {/* Top Bar (Mobile Toggle & Title) */}
+          {/* Top Bar */}
           <header className="h-16 bg-brand-gray/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
             <div className="flex items-center gap-4">
               <button
@@ -97,12 +126,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               >
                 <MenuIcon className="w-5 h-5" />
               </button>
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className="text-lg font-bold text-white tracking-wide font-display">
                 Admin Dashboard
               </h2>
             </div>
-            <div className="hidden sm:block text-xs font-medium text-brand-muted bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-              Authorized Personnel Only
+
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <div className="hidden sm:block text-xs font-medium text-brand-muted bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                Authorized Personnel Only
+              </div>
             </div>
           </header>
 
@@ -114,7 +147,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   );
 };
 
-// --- Icons (Moved to bottom for cleanliness) ---
+// --- Icons ---
 
 type NavIcon = (props: SVGProps<SVGSVGElement>) => ReactElement;
 
@@ -202,6 +235,22 @@ const CloseIcon: NavIcon = (props) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M6 18L18 6M6 6l12 12"
+    />
+  </svg>
+);
+
+const LogoutIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
     />
   </svg>
 );
