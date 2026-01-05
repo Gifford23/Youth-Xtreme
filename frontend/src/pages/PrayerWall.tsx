@@ -126,36 +126,31 @@ const PrayerWall = () => {
 
   return (
     <div className="min-h-screen bg-brand-dark">
-      <div className="max-w-6xl mx-auto px-4 py-14">
+      {/* ✅ FIXED: Increased top padding to pt-32 so header clears Navbar */}
+      <div className="max-w-6xl mx-auto px-4 pt-32 pb-20">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-display font-bold text-white mb-4 uppercase tracking-tight">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase tracking-tight">
             Prayer <span className="text-brand-accent">Wall</span>
           </h1>
-          <p className="text-lg text-brand-muted max-w-2xl mx-auto">
-            Share your prayer requests and praise reports with our community.
+          <p className="text-lg text-brand-muted max-w-2xl mx-auto leading-relaxed">
+            "For where two or three gather in my name, there am I with them."
+            Share your requests and celebrate God's goodness with our community.
           </p>
         </div>
 
         {!isFirebaseConfigured && (
           <div className="mb-10 bg-brand-gray p-6 rounded-3xl border border-white/5 shadow-xl">
             <p className="text-brand-muted text-center">
-              Firebase is not configured. Add your{" "}
-              <code className="bg-brand-dark/40 px-2 py-1 rounded">
-                VITE_FIREBASE_*
-              </code>{" "}
-              values to
-              <code className="bg-brand-dark/40 px-2 py-1 rounded">
-                .env.local
-              </code>{" "}
-              and restart the dev server.
+              Firebase is not configured. Check your <code>.env.local</code>{" "}
+              file.
             </p>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex justify-center mb-10">
-          <div className="inline-flex rounded-2xl bg-brand-gray border border-white/10 p-1">
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex rounded-2xl bg-brand-gray border border-white/10 p-1.5 shadow-lg">
             {[
               { key: "requests", label: "Prayer Requests" },
               { key: "praise", label: "Praise Reports" },
@@ -164,9 +159,9 @@ const PrayerWall = () => {
                 key={key}
                 type="button"
                 onClick={() => setActiveTab(key as any)}
-                className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl transition-all ${
+                className={`px-8 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
                   activeTab === key
-                    ? "bg-brand-accent text-brand-dark shadow-lg"
+                    ? "bg-brand-accent text-brand-dark shadow-md scale-105"
                     : "text-brand-muted hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -178,53 +173,58 @@ const PrayerWall = () => {
 
         {/* Prayer Requests Tab */}
         {activeTab === "requests" && (
-          <div className="space-y-10">
+          <div className="space-y-12 animate-fade-in-up">
             {/* Post Request Form */}
-            <div className="bg-brand-gray p-8 rounded-3xl border border-white/5 shadow-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide">
-                  Share a Prayer Request
-                </h2>
-              </div>
-              <textarea
-                value={requestForm.request}
-                onChange={(e) => setRequestForm({ request: e.target.value })}
-                placeholder="Share what you'd like us to pray for (anonymous)..."
-                className="w-full bg-brand-dark/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-brand-muted focus:outline-none focus:border-brand-accent focus:bg-brand-dark/70 transition-all min-h-[140px] resize-none text-lg"
-              />
-              <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm text-brand-muted flex items-center gap-2">
-                  <span className="text-lg">🔒</span>
-                  Your request is anonymous
-                </p>
-                <button
-                  type="button"
-                  onClick={handleRequestSubmit}
-                  disabled={requestSubmitting || !requestForm.request.trim()}
-                  className="rounded-2xl bg-brand-accent px-8 py-4 text-base font-bold text-brand-dark hover:bg-white transition-all shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide"
-                >
-                  {requestSubmitting ? "Posting..." : "Post Request"}
-                </button>
-              </div>
-              {requestMessage && (
-                <div className="mt-4 p-4 rounded-2xl bg-green-500/10 border border-green-500/20">
-                  <p className="text-sm text-green-400 font-medium">
-                    {requestMessage}
-                  </p>
+            <div className="bg-brand-gray p-8 sm:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden">
+              {/* Decorative Blur */}
+              <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-brand-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide">
+                    Share a Request
+                  </h2>
                 </div>
-              )}
+                <textarea
+                  value={requestForm.request}
+                  onChange={(e) => setRequestForm({ request: e.target.value })}
+                  placeholder="Share what you'd like us to pray for (anonymous)..."
+                  className="w-full bg-brand-dark/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-brand-muted/50 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all min-h-[140px] resize-none text-lg leading-relaxed"
+                />
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-sm text-brand-muted flex items-center gap-2 bg-brand-dark/30 px-3 py-1.5 rounded-lg border border-white/5">
+                    <span className="text-lg">🔒</span>
+                    Your request is posted anonymously
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleRequestSubmit}
+                    disabled={requestSubmitting || !requestForm.request.trim()}
+                    className="w-full sm:w-auto rounded-xl bg-brand-accent px-8 py-3 text-base font-bold text-brand-dark hover:bg-white hover:scale-105 transition-all shadow-lg hover:shadow-brand-accent/30 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed uppercase tracking-wide"
+                  >
+                    {requestSubmitting ? "Posting..." : "Post Request"}
+                  </button>
+                </div>
+                {requestMessage && (
+                  <div className="mt-4 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                    <p className="text-sm text-green-400 font-bold">
+                      {requestMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Requests List */}
             {requestsLoading ? (
               <div className="text-center py-24">
                 <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-brand-accent"></div>
-                <p className="mt-5 text-brand-muted text-lg">
-                  Loading requests...
+                <p className="mt-5 text-brand-muted text-lg animate-pulse">
+                  Loading prayer requests...
                 </p>
               </div>
             ) : requests.length === 0 ? (
-              <div className="bg-brand-gray p-16 rounded-3xl border border-white/5 text-center">
+              <div className="bg-brand-gray p-16 rounded-3xl border border-white/5 text-center border-dashed">
                 <h3 className="text-2xl font-display font-bold text-white uppercase mb-3">
                   No requests yet
                 </h3>
@@ -237,26 +237,26 @@ const PrayerWall = () => {
                 {requests.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-brand-gray p-7 rounded-3xl border border-white/5 shadow-xl hover:shadow-2xl transition-shadow"
+                    className="bg-brand-gray p-8 rounded-3xl border border-white/5 shadow-lg hover:shadow-2xl hover:border-brand-accent/30 transition-all duration-300 group"
                   >
-                    <p className="text-white text-lg mb-5 whitespace-pre-wrap leading-relaxed">
-                      {r.request}
+                    <p className="text-white text-lg mb-6 whitespace-pre-wrap leading-relaxed font-medium">
+                      "{r.request}"
                     </p>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                      <span className="text-xs text-brand-muted uppercase tracking-wide">
+                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                      <span className="text-xs text-brand-muted uppercase tracking-wider font-bold">
                         {r.created_at?.toDate?.()?.toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
-                          year: "numeric",
-                        }) ?? ""}
+                        }) ?? "Just now"}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleCommitToPray(r.id, r.commit_count)}
-                        className="flex items-center gap-2 text-sm font-semibold text-brand-accent hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-xl hover:bg-white/10"
+                        className="flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-dark transition-all bg-brand-dark/50 border border-brand-accent/20 px-4 py-2 rounded-xl hover:bg-brand-accent group-hover:border-brand-accent"
                       >
-                        <span className="text-lg">
-                          Commit to Pray ({r.commit_count || 0})
+                        <span>🙏 Commit to Pray</span>
+                        <span className="bg-white/10 px-2 py-0.5 rounded-md text-xs">
+                          {r.commit_count || 0}
                         </span>
                       </button>
                     </div>
@@ -269,60 +269,69 @@ const PrayerWall = () => {
 
         {/* Praise Reports Tab */}
         {activeTab === "praise" && (
-          <div className="space-y-10">
+          <div className="space-y-12 animate-fade-in-up">
             {/* Share Praise Form */}
-            <div className="bg-brand-gray p-8 rounded-3xl border border-white/5 shadow-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide">
-                  Share a Praise Report
-                </h2>
-              </div>
-              <input
-                type="text"
-                value={praiseForm.author}
-                onChange={(e) =>
-                  setPraiseForm({ ...praiseForm, author: e.target.value })
-                }
-                placeholder="Your name (optional)"
-                className="w-full bg-brand-dark/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-brand-muted focus:outline-none focus:border-brand-accent focus:bg-brand-dark/70 transition-all mb-5 text-lg"
-              />
-              <textarea
-                value={praiseForm.testimony}
-                onChange={(e) =>
-                  setPraiseForm({ ...praiseForm, testimony: e.target.value })
-                }
-                placeholder="Share how God has moved in your life..."
-                className="w-full bg-brand-dark/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-brand-muted focus:outline-none focus:border-brand-accent focus:bg-brand-dark/70 transition-all min-h-[140px] resize-none text-lg"
-              />
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="button"
-                  onClick={handlePraiseSubmit}
-                  disabled={praiseSubmitting || !praiseForm.testimony.trim()}
-                  className="rounded-2xl bg-brand-accent px-8 py-4 text-base font-bold text-brand-dark hover:bg-white transition-all shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide"
-                >
-                  {praiseSubmitting ? "Sharing..." : "Share Praise"}
-                </button>
-              </div>
-              {praiseMessage && (
-                <div className="mt-4 p-4 rounded-2xl bg-green-500/10 border border-green-500/20">
-                  <p className="text-sm text-green-400 font-medium">
-                    {praiseMessage}
-                  </p>
+            <div className="bg-brand-gray p-8 sm:p-10 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-green-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide">
+                    Share a Praise Report
+                  </h2>
                 </div>
-              )}
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    value={praiseForm.author}
+                    onChange={(e) =>
+                      setPraiseForm({ ...praiseForm, author: e.target.value })
+                    }
+                    placeholder="Your Name (Optional)"
+                    className="w-full bg-brand-dark/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-brand-muted/50 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all text-lg"
+                  />
+                  <textarea
+                    value={praiseForm.testimony}
+                    onChange={(e) =>
+                      setPraiseForm({
+                        ...praiseForm,
+                        testimony: e.target.value,
+                      })
+                    }
+                    placeholder="Share how God has moved in your life..."
+                    className="w-full bg-brand-dark/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-brand-muted/50 focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent/50 transition-all min-h-[140px] resize-none text-lg leading-relaxed"
+                  />
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handlePraiseSubmit}
+                    disabled={praiseSubmitting || !praiseForm.testimony.trim()}
+                    className="rounded-xl bg-brand-accent px-8 py-3 text-base font-bold text-brand-dark hover:bg-white hover:scale-105 transition-all shadow-lg hover:shadow-brand-accent/30 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed uppercase tracking-wide"
+                  >
+                    {praiseSubmitting ? "Sharing..." : "Share Praise"}
+                  </button>
+                </div>
+                {praiseMessage && (
+                  <div className="mt-4 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                    <p className="text-sm text-green-400 font-bold">
+                      {praiseMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Praise List */}
             {praisesLoading ? (
               <div className="text-center py-24">
                 <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-brand-accent"></div>
-                <p className="mt-5 text-brand-muted text-lg">
+                <p className="mt-5 text-brand-muted text-lg animate-pulse">
                   Loading praise reports...
                 </p>
               </div>
             ) : praises.length === 0 ? (
-              <div className="bg-brand-gray p-16 rounded-3xl border border-white/5 text-center">
+              <div className="bg-brand-gray p-16 rounded-3xl border border-white/5 text-center border-dashed">
                 <h3 className="text-2xl font-display font-bold text-white uppercase mb-3">
                   No praise reports yet
                 </h3>
@@ -335,31 +344,31 @@ const PrayerWall = () => {
                 {praises.map((p) => (
                   <div
                     key={p.id}
-                    className="bg-brand-gray p-8 rounded-3xl border border-white/5 shadow-xl hover:shadow-2xl transition-shadow"
+                    className="bg-brand-gray p-8 rounded-3xl border border-white/5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-lg">
+                    <div className="flex items-start justify-between mb-6 border-b border-white/5 pb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-brand-accent flex items-center justify-center text-brand-dark font-bold text-xl shadow-lg shadow-brand-accent/20">
                           {p.author ? p.author.charAt(0).toUpperCase() : "A"}
                         </div>
                         <div>
                           <h3 className="font-bold text-white text-lg">
                             {p.author || "Anonymous"}
                           </h3>
-                          <span className="text-xs text-brand-muted uppercase tracking-wide">
+                          <span className="text-xs text-brand-muted uppercase tracking-wider font-semibold">
                             {p.created_at
                               ?.toDate?.()
                               ?.toLocaleDateString("en-US", {
-                                month: "short",
+                                month: "long",
                                 day: "numeric",
                                 year: "numeric",
-                              }) ?? ""}
+                              }) ?? "Just now"}
                           </span>
                         </div>
                       </div>
                     </div>
                     <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">
-                      {p.testimony}
+                      "{p.testimony}"
                     </p>
                   </div>
                 ))}

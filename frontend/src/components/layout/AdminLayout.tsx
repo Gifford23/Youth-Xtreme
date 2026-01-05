@@ -10,189 +10,200 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-type NavIcon = (props: SVGProps<SVGSVGElement>) => ReactElement;
-
-const HomeIcon: NavIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-    <path
-      d="M3 10.5L12 3l9 7.5V21a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V10.5z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const CalendarIcon: NavIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-    <path
-      d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 012 2v13a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const SettingsIcon: NavIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-    <path
-      d="M12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    />
-    <path
-      d="M19.4 15a8 8 0 00.1-1l2-1.1-2-3.5-2.2.5a7.7 7.7 0 00-1.7-1l-.3-2.3H10.7l-.3 2.3a7.7 7.7 0 00-1.7 1l-2.2-.5-2 3.5 2 1.1a8 8 0 00.1 1 8 8 0 00-.1 1l-2 1.1 2 3.5 2.2-.5a7.7 7.7 0 001.7 1l.3 2.3h4.6l.3-2.3a7.7 7.7 0 001.7-1l2.2.5 2-3.5-2-1.1a8 8 0 00-.1-1z"
-      stroke="currentColor"
-      strokeWidth="1.3"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems: Array<{ to: string; label: string; Icon: NavIcon }> = [
+  const navItems = [
     { to: "/", label: "Home", Icon: HomeIcon },
     { to: "/events", label: "Events", Icon: CalendarIcon },
     { to: "/admin", label: "Admin", Icon: SettingsIcon },
   ];
 
   return (
-    <div className="min-h-screen bg-brand-dark text-brand-text font-sans">
+    <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
       <div className="flex min-h-screen">
+        {/* Mobile Backdrop */}
         <div
-          className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden ${
+          className={`fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity lg:hidden ${
             sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
           onClick={() => setSidebarOpen(false)}
         />
 
+        {/* Sidebar Navigation */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-72 bg-brand-gray/80 backdrop-blur-xl border-r border-white/10 shadow-2xl shadow-black/40 transform transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-brand-gray/95 backdrop-blur-xl border-r border-white/10 shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0 flex flex-col ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="p-6 border-b border-white/5">
-            <div className="flex items-center justify-between">
-              <h1 className="font-display text-2xl font-bold tracking-wider text-white">
-                YOUTH <span className="text-brand-accent">XTREME</span>
-              </h1>
-              <button
-                type="button"
-                className="lg:hidden text-brand-muted hover:text-white transition-colors"
-                onClick={() => setSidebarOpen(false)}
-                aria-label="Close sidebar"
-              >
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M6 6l12 12M18 6L6 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs text-brand-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-accent" />
-              Admin Panel
-            </div>
+          {/* 1. Sidebar Header */}
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+            <h1 className="font-display text-2xl font-bold tracking-wider text-white">
+              YOUTH <span className="text-brand-accent">XTREME</span>
+            </h1>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-brand-muted hover:text-white transition-colors"
+            >
+              <CloseIcon className="w-6 h-6" />
+            </button>
           </div>
 
-          <div className="px-4 pt-5">
-            <div className="px-3 text-[11px] uppercase tracking-wider text-brand-muted">
-              Navigation
+          {/* 2. Navigation Links */}
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="px-3 text-[11px] font-bold uppercase tracking-widest text-brand-muted mb-4">
+              Main Menu
             </div>
-            <nav className="mt-3 space-y-1">
+            <nav className="space-y-1">
               {navItems.map(({ to, label, Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
-                    `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 ${
+                    `group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-all ${
                       isActive
-                        ? "bg-white/10 text-white"
+                        ? "bg-brand-accent text-brand-dark shadow-lg shadow-brand-accent/20"
                         : "text-brand-muted hover:bg-white/5 hover:text-white"
                     }`
                   }
                 >
-                  {({ isActive }) => (
-                    <>
-                      <span
-                        className={`absolute left-0 top-2 bottom-2 w-1 rounded-r-full ${
-                          isActive ? "bg-brand-accent" : "bg-transparent"
-                        }`}
-                      />
-                      <Icon
-                        className={`h-5 w-5 transition-colors ${
-                          isActive
-                            ? "text-brand-accent"
-                            : "text-brand-muted group-hover:text-white"
-                        }`}
-                      />
-                      <span className="truncate">{label}</span>
-                    </>
-                  )}
+                  <Icon className="w-5 h-5" />
+                  {label}
                 </NavLink>
               ))}
             </nav>
           </div>
 
-          <div className="mt-auto p-4 border-t border-white/5">
-            <div className="flex items-center justify-between text-xs text-brand-muted">
+          {/* 3. Sidebar Footer (Copyright) */}
+          <div className="p-6 border-t border-white/5 bg-black/20">
+            <div className="flex items-center justify-between text-xs text-brand-muted font-medium">
               <span>© 2026 Youth Xtreme</span>
-              <span className="rounded-full bg-white/5 px-2 py-0.5">v1</span>
+              <span className="bg-white/10 px-2 py-0.5 rounded-md text-white/50">
+                v1.0
+              </span>
             </div>
           </div>
         </aside>
 
+        {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 bg-brand-gray/40 backdrop-blur border-b border-white/5 flex items-center justify-between px-6">
-            <div className="flex items-center gap-3">
+          {/* Top Bar (Mobile Toggle & Title) */}
+          <header className="h-16 bg-brand-gray/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+            <div className="flex items-center gap-4">
               <button
-                type="button"
-                className="lg:hidden inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-white hover:bg-white/10 transition-colors"
                 onClick={() => setSidebarOpen(true)}
-                aria-label="Open sidebar"
+                className="lg:hidden p-2 rounded-lg border border-white/10 text-white hover:bg-white/5"
               >
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M4 7h16M4 12h16M4 17h16"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <MenuIcon className="w-5 h-5" />
               </button>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-bold text-white tracking-wide">
                 Admin Dashboard
               </h2>
             </div>
-
-            <div className="hidden sm:block text-xs text-brand-muted">
-              Manage events and site content
+            <div className="hidden sm:block text-xs font-medium text-brand-muted bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+              Authorized Personnel Only
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto">{children}</div>
+          {/* Page Content */}
+          <div className="flex-1 p-4 lg:p-8 overflow-auto">{children}</div>
         </main>
       </div>
     </div>
   );
 };
+
+// --- Icons (Moved to bottom for cleanliness) ---
+
+type NavIcon = (props: SVGProps<SVGSVGElement>) => ReactElement;
+
+const HomeIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+    />
+  </svg>
+);
+
+const CalendarIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+    />
+  </svg>
+);
+
+const SettingsIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+    />
+  </svg>
+);
+
+const MenuIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4 6h16M4 12h16M4 18h16"
+    />
+  </svg>
+);
+
+const CloseIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12"
+    />
+  </svg>
+);
 
 export default AdminLayout;

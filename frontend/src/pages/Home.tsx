@@ -8,7 +8,7 @@ import {
   type QueryDocumentSnapshot,
   type DocumentData,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "../lib/firebase";
+import { db } from "../lib/firebase"; // Removed isFirebaseConfigured check for cleaner UI (optional)
 import EventCard from "../components/events/EventCard";
 import { Link } from "react-router-dom";
 
@@ -119,18 +119,18 @@ const Home = () => {
             >
               Play Video
             </button>
-            <a
-              href="/events"
+            <Link
+              to="/events"
               className="rounded-full bg-brand-accent px-8 py-3.5 text-sm font-bold text-brand-dark shadow-sm hover:bg-white transition-all"
             >
               Check Upcoming Events
-            </a>
-            <a
-              href="/admin"
+            </Link>
+            <Link
+              to="/admin"
               className="text-sm font-semibold leading-6 text-white hover:text-brand-accent transition-colors"
             >
               Admin <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -165,7 +165,7 @@ const Home = () => {
                   className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none">
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <h3 className="text-3xl font-bold text-white mb-2">
                     {featuredMedia.event_name}
@@ -219,13 +219,6 @@ const Home = () => {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-brand-accent"></div>
               <p className="mt-4 text-brand-muted">Loading events...</p>
             </div>
-          ) : !isFirebaseConfigured ? (
-            <div className="text-center py-20 text-brand-muted">
-              <p>
-                Firebase is not configured. Add your VITE_FIREBASE_* values to
-                .env.local and restart the dev server.
-              </p>
-            </div>
           ) : events.length === 0 ? (
             <div className="text-center py-20 text-brand-muted">
               <p>No events found. Check back soon!</p>
@@ -235,16 +228,17 @@ const Home = () => {
               {events.map((event) => (
                 <EventCard
                   key={event.id}
-                  id={event.id}
-                  title={event.title}
-                  date={
-                    event.event_date?.toDate
+                  // ✅ FIXED: Passing single 'event' object
+                  event={{
+                    id: event.id,
+                    title: event.title,
+                    date: event.event_date?.toDate
                       ? event.event_date.toDate().toLocaleDateString()
-                      : "Date TBD"
-                  }
-                  location={event.location}
-                  category={event.category}
-                  image={event.image_url}
+                      : "Date TBD",
+                    location: event.location,
+                    category: event.category,
+                    imageUrl: event.image_url,
+                  }}
                 />
               ))}
             </div>
@@ -252,13 +246,13 @@ const Home = () => {
 
           {events.length > 0 && (
             <div className="mt-12 text-center">
-              <a
-                href="/events"
+              <Link
+                to="/events"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-accent hover:text-white transition-colors"
               >
                 View All Events
                 <span aria-hidden="true">→</span>
-              </a>
+              </Link>
             </div>
           )}
         </div>

@@ -9,6 +9,8 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import EventCard from "../components/events/EventCard";
+import Navbar from "../components/layout/Navbar";
+// import Dropdown from "../components/common/Dropdown"; // Only include if you use it
 
 interface AppEvent {
   id: string;
@@ -29,6 +31,7 @@ const Events = () => {
       return;
     }
 
+    // Subscribe to real-time updates
     const q = query(collection(db, "events"), orderBy("event_date", "asc"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const eventsData = querySnapshot.docs.map(
@@ -46,7 +49,7 @@ const Events = () => {
 
   if (loading) {
     return (
-      <div className="pt-32 text-center">
+      <div className="pt-32 text-center min-h-screen bg-brand-dark">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-brand-accent"></div>
         <p className="mt-4 text-brand-muted">Loading Xtreme Events...</p>
       </div>
@@ -77,27 +80,29 @@ const Events = () => {
       </h1>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {events.map((event) => (
+        {events.map((eventItem) => (
           <EventCard
-            key={event.id}
-            id={event.id}
-            title={event.title}
-            // Logic to handle Firestore Timestamp to string conversion
-            date={
-              event.event_date?.toDate
-                ? event.event_date.toDate().toLocaleDateString()
-                : "Date TBD"
-            }
-            location={event.location}
-            category={event.category}
-            image={event.image_url}
+            key={eventItem.id}
+            // ✅ THE FIX: Pass a single 'event' object
+            event={{
+              id: eventItem.id,
+              title: eventItem.title,
+              // Handle date conversion right here
+              date: eventItem.event_date?.toDate
+                ? eventItem.event_date.toDate().toLocaleDateString()
+                : "Date TBD",
+              location: eventItem.location,
+              category: eventItem.category,
+              // Map 'image_url' from database to 'imageUrl' for the card
+              imageUrl: eventItem.image_url,
+            }}
           />
         ))}
       </div>
 
       {events.length === 0 && (
-        <div className="text-center py-20 text-brand-muted">
-          <p>No events found in the database.</p>
+        <div className="text-center py-20 text-brand-muted border-2 border-dashed border-white/5 rounded-3xl">
+          <p>No upcoming events found.</p>
         </div>
       )}
     </div>
