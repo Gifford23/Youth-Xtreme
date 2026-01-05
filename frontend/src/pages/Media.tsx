@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../lib/firebase";
+import MediaGrid from "../components/media/MediaGrid";
 
 interface MediaItem {
   id: string;
@@ -14,278 +25,339 @@ interface MediaItem {
   created_at: any;
 }
 
+interface EventGroup {
+  eventName: string;
+  date: string;
+  items: MediaItem[];
+}
+
 const Media = () => {
-  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [groupedMedia, setGroupedMedia] = useState<EventGroup[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "photos" | "videos">("all");
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+
+  // --- CRUD STATE ---
+  const [isPosting, setIsPosting] = useState(false);
+  const [newPost, setNewPost] = useState({
+    url: "",
+    caption: "",
+    event_name: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCaption, setEditCaption] = useState("");
+
+  // --- 1. READ (Fetch & Group Data) ---
+  const groupMediaByEvent = (flatList: MediaItem[]) => {
+    const groups: { [key: string]: EventGroup } = {};
+    flatList.forEach((item) => {
+      const key = item.event_name || "General Highlights";
+      if (!groups[key]) {
+        groups[key] = {
+          eventName: key,
+          date: item.date,
+          items: [],
+        };
+      }
+      groups[key].items.push(item);
+    });
+    return Object.values(groups);
+  };
 
   useEffect(() => {
     if (!db) return;
     setLoading(true);
     const q = query(collection(db, "media"), orderBy("created_at", "desc"));
     const unsub = onSnapshot(q, (snap) => {
-      setMedia(snap.docs.map((d) => ({ id: d.id, ...d.data() } as MediaItem)));
+      const rawData = snap.docs.map(
+        (d) => ({ id: d.id, ...d.data() } as MediaItem)
+      );
+      const groups = groupMediaByEvent(rawData);
+      setGroupedMedia(groups);
       setLoading(false);
     });
     return unsub;
   }, []);
 
-  const filteredMedia = media.filter((item) => {
-    if (filter === "all") return true;
-    return filter === "photos" ? item.type === "photo" : item.type === "video";
-  });
+  // --- 2. CREATE (Add New Post) ---
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !newPost.url || !newPost.event_name) return;
+    setIsPosting(true);
+    try {
+      await addDoc(collection(db, "media"), {
+        type: "photo", // Defaulting to photo for simplicity (URL based)
+        url: newPost.url,
+        caption: newPost.caption,
+        event_name: newPost.event_name,
+        date: newPost.date,
+        featured: false,
+        created_at: serverTimestamp(),
+      });
+      // Reset form
+      setNewPost({
+        url: "",
+        caption: "",
+        event_name: "",
+        date: new Date().toISOString().split("T")[0],
+      });
+      alert("✅ Moment shared successfully!");
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      alert("❌ Failed to post.");
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
-  const featuredItem = media.find((item) => item.featured);
+  // --- 3. DELETE (Remove Item) ---
+  const handleDelete = async (id: string) => {
+    if (!db || !confirm("Are you sure you want to delete this moment?")) return;
+    try {
+      await deleteDoc(doc(db, "media", id));
+      setSelectedItem(null); // Close lightbox
+    } catch (error) {
+      console.error("Error removing document: ", error);
+      alert("❌ Failed to delete.");
+    }
+  };
+
+  // --- 4. UPDATE (Edit Caption) ---
+  const handleUpdate = async () => {
+    if (!db || !selectedItem) return;
+    try {
+      await updateDoc(doc(db, "media", selectedItem.id), {
+        caption: editCaption,
+      });
+      // Update local state to reflect change immediately in lightbox
+      setSelectedItem({ ...selectedItem, caption: editCaption });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      alert("❌ Failed to update.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-brand-dark">
-      {/* ✅ FIXED: Changed 'py-14' to 'pt-32 pb-20' to clear the Navbar */}
-      <div className="max-w-7xl mx-auto px-4 pt-32 pb-20">
+      <div className="max-w-4xl mx-auto px-4 pt-32 pb-20">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase tracking-tight">
-            Xtreme <span className="text-brand-accent">Moments</span>
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-display font-bold text-white mb-4 uppercase tracking-tight">
+            Xtreme <span className="text-brand-accent">Feed</span>
           </h1>
-          <p className="text-lg text-brand-muted max-w-2xl mx-auto leading-relaxed">
-            Relive the energy and excitement of Friday night services, Fun Runs,
-            and youth events.
+          <p className="text-lg text-brand-muted">
+            Share and relive the best moments.
           </p>
         </div>
 
         {!isFirebaseConfigured && (
-          <div className="mb-10 bg-brand-gray p-6 rounded-3xl border border-white/5 shadow-xl">
-            <p className="text-brand-muted text-center">
-              Firebase is not configured. Add your{" "}
-              <code className="bg-brand-dark/40 px-2 py-1 rounded">
-                VITE_FIREBASE_*
-              </code>{" "}
-              values to
-              <code className="bg-brand-dark/40 px-2 py-1 rounded">
-                .env.local
-              </code>{" "}
-              and restart the dev server.
-            </p>
+          <div className="mb-10 bg-brand-gray p-6 rounded-3xl border border-white/5 text-center">
+            <p className="text-brand-muted">Firebase is not configured.</p>
           </div>
         )}
 
-        {/* Weekly Highlight */}
-        {featuredItem && (
-          <div className="mb-20 animate-fade-in-up">
-            <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide mb-8 text-center">
-              Weekly Highlight
-            </h2>
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl group max-w-5xl mx-auto border border-white/10">
-              {featuredItem.type === "video" ? (
-                <video
-                  className="w-full h-[500px] object-cover"
-                  poster={featuredItem.thumbnail}
-                  controls
-                  playsInline
-                >
-                  <source src={featuredItem.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img
-                  src={featuredItem.url}
-                  alt={featuredItem.caption}
-                  className="w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
+        {/* --- CREATE SECTION (Facebook Style Input) --- */}
+        <div className="bg-brand-gray rounded-3xl p-6 border border-white/5 shadow-xl mb-12 animate-fade-in-up">
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-full bg-brand-accent flex items-center justify-center text-brand-dark font-bold text-lg shrink-0">
+                You
+              </div>
+              <div className="flex-1 space-y-3">
+                <input
+                  type="text"
+                  placeholder="Paste an Image URL (e.g., from Unsplash)..."
+                  className="w-full bg-brand-dark/50 border-none rounded-xl px-4 py-3 text-white placeholder-brand-muted focus:ring-1 focus:ring-brand-accent transition-all"
+                  value={newPost.url}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, url: e.target.value })
+                  }
+                  required
                 />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none">
-                <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12">
-                  <h3 className="text-4xl font-display font-bold text-white mb-3 uppercase tracking-tight">
-                    {featuredItem.event_name}
-                  </h3>
-                  <p className="text-brand-muted text-xl mb-3 font-medium">
-                    {featuredItem.caption}
-                  </p>
-                  <p className="text-brand-accent font-bold tracking-wide uppercase text-sm bg-brand-accent/10 inline-block px-3 py-1 rounded-full border border-brand-accent/20">
-                    {featuredItem.date}
-                  </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Event Name (e.g., Neon Night)"
+                    className="bg-brand-dark/50 border-none rounded-xl px-4 py-3 text-white placeholder-brand-muted text-sm focus:ring-1 focus:ring-brand-accent"
+                    value={newPost.event_name}
+                    onChange={(e) =>
+                      setNewPost({ ...newPost, event_name: e.target.value })
+                    }
+                    required
+                  />
+                  <input
+                    type="date"
+                    className="bg-brand-dark/50 border-none rounded-xl px-4 py-3 text-white text-sm focus:ring-1 focus:ring-brand-accent [color-scheme:dark]"
+                    value={newPost.date}
+                    onChange={(e) =>
+                      setNewPost({ ...newPost, date: e.target.value })
+                    }
+                    required
+                  />
                 </div>
+                <textarea
+                  placeholder="Write a caption..."
+                  className="w-full bg-brand-dark/50 border-none rounded-xl px-4 py-3 text-white placeholder-brand-muted text-sm focus:ring-1 focus:ring-brand-accent resize-none h-20"
+                  value={newPost.caption}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, caption: e.target.value })
+                  }
+                />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Filter Tabs */}
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex rounded-2xl bg-brand-gray border border-white/10 p-1.5 shadow-lg">
-            {[
-              { key: "all", label: "All Media" },
-              { key: "photos", label: "Photos" },
-              { key: "videos", label: "Videos" },
-            ].map(({ key, label }) => (
+            <div className="flex justify-end pt-2 border-t border-white/5">
               <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key as any)}
-                className={`flex items-center gap-2 px-8 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
-                  filter === key
-                    ? "bg-brand-accent text-brand-dark shadow-md scale-105"
-                    : "text-brand-muted hover:text-white hover:bg-white/5"
-                }`}
+                type="submit"
+                disabled={isPosting}
+                className="bg-brand-accent text-brand-dark font-bold px-8 py-2 rounded-xl hover:bg-white hover:scale-105 transition-all disabled:opacity-50"
               >
-                {label}
+                {isPosting ? "Posting..." : "Post Moment"}
               </button>
-            ))}
-          </div>
+            </div>
+          </form>
         </div>
 
-        {/* Media Grid */}
+        {/* --- READ SECTION (Feed) --- */}
         {loading ? (
-          <div className="text-center py-24">
+          <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-brand-accent"></div>
-            <p className="mt-5 text-brand-muted text-lg animate-pulse">
-              Loading gallery...
-            </p>
           </div>
-        ) : filteredMedia.length === 0 ? (
-          <div className="bg-brand-gray p-16 rounded-3xl border border-white/5 text-center border-dashed">
-            <h3 className="text-2xl font-display font-bold text-white uppercase mb-3">
-              No media yet
-            </h3>
-            <p className="text-brand-muted text-lg">
-              Add photos and videos to the{" "}
-              <code className="bg-brand-dark/40 px-2 py-1 rounded text-white">
-                media
-              </code>{" "}
-              collection in Firestore.
+        ) : groupedMedia.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">
+            <p className="text-brand-muted">
+              No posts yet. Be the first to share!
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-in-up">
-            {filteredMedia.map((item) => (
+          <div className="space-y-12 animate-fade-in-up">
+            {groupedMedia.map((group) => (
               <div
-                key={item.id}
-                onClick={() => setSelectedItem(item)}
-                className="group relative rounded-3xl overflow-hidden bg-brand-gray border border-white/5 shadow-xl hover:shadow-2xl hover:border-brand-accent/30 transition-all duration-300 hover:-translate-y-2 cursor-pointer"
+                key={group.eventName + group.date}
+                className="bg-brand-gray/50 rounded-3xl p-6 border border-white/5 shadow-2xl"
               >
-                <div className="aspect-square relative overflow-hidden">
-                  {item.type === "video" ? (
-                    <div className="relative w-full h-full bg-brand-dark">
-                      <img
-                        src={item.thumbnail || ""}
-                        alt={item.caption}
-                        className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-14 h-14 rounded-full bg-brand-accent/90 flex items-center justify-center text-brand-dark shadow-lg group-hover:scale-110 transition-transform">
-                          <svg
-                            className="w-6 h-6 ml-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <img
-                      src={item.url}
-                      alt={item.caption}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  )}
-
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      <h4 className="font-bold text-white text-lg mb-1 leading-tight">
-                        {item.event_name}
-                      </h4>
-                      <p className="text-brand-muted text-sm line-clamp-2 mb-2">
-                        {item.caption}
-                      </p>
-                      <p className="text-brand-accent text-xs font-bold uppercase tracking-wider">
-                        {item.date}
-                      </p>
-                    </div>
+                {/* Post Header */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-brand-accent flex items-center justify-center text-brand-dark font-bold text-lg shadow-lg">
+                    YX
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg leading-tight">
+                      {group.eventName}
+                    </h3>
+                    <p className="text-brand-muted text-xs font-medium uppercase tracking-wider">
+                      {group.date} • {group.items.length} moments
+                    </p>
                   </div>
                 </div>
 
-                {item.featured && (
-                  <div className="absolute top-4 right-4 bg-brand-accent text-brand-dark px-3 py-1 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider">
-                    Featured
-                  </div>
-                )}
+                {/* Group Caption (uses first item's caption) */}
+                <p className="text-white mb-4 pl-1 text-sm sm:text-base opacity-90">
+                  {group.items[0]?.caption}
+                </p>
+
+                {/* Grid */}
+                <MediaGrid
+                  items={group.items}
+                  onItemClick={(item) => {
+                    setSelectedItem(item);
+                    setEditCaption(item.caption); // Initialize edit form
+                    setIsEditing(false); // Reset edit mode
+                  }}
+                />
+
+                {/* Actions */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
+                  <button className="flex items-center gap-2 text-brand-muted hover:text-brand-accent transition-colors text-sm font-bold px-4 py-2 hover:bg-white/5 rounded-lg">
+                    <span>🔥</span> Fire
+                  </button>
+                  <button className="flex items-center gap-2 text-brand-muted hover:text-brand-accent transition-colors text-sm font-bold px-4 py-2 hover:bg-white/5 rounded-lg">
+                    <span>🙌</span> Amen
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Lightbox Modal */}
+        {/* --- LIGHTBOX (With UPDATE & DELETE) --- */}
         {selectedItem && (
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in"
             onClick={() => setSelectedItem(null)}
           >
             <div
-              className="relative max-w-5xl w-full bg-brand-gray rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative max-w-6xl w-full h-full flex flex-col justify-center"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Close Button */}
               <button
                 onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-brand-accent hover:text-brand-dark transition-all"
+                className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-black/50 text-white hover:bg-white hover:text-black flex items-center justify-center transition-all"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                ✕
               </button>
 
-              <div className="flex-1 overflow-auto bg-black flex items-center justify-center">
+              {/* CRUD Actions */}
+              <div className="absolute top-4 left-4 z-20 flex gap-2">
+                <button
+                  onClick={() => handleDelete(selectedItem.id)}
+                  className="bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-all flex items-center gap-2"
+                >
+                  🗑️ Delete
+                </button>
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="bg-white/10 text-white hover:bg-brand-accent hover:text-brand-dark px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-all flex items-center gap-2"
+                >
+                  ✏️ {isEditing ? "Cancel Edit" : "Edit Caption"}
+                </button>
+              </div>
+
+              {/* Image Display */}
+              <div className="flex-1 flex items-center justify-center overflow-hidden mb-4">
                 {selectedItem.type === "video" ? (
                   <video
-                    className="max-h-[70vh] w-full object-contain"
-                    poster={selectedItem.thumbnail}
+                    className="max-h-full max-w-full rounded-xl shadow-2xl"
                     controls
                     autoPlay
-                    playsInline
-                  >
-                    <source src={selectedItem.url} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
+                    src={selectedItem.url}
+                  />
                 ) : (
                   <img
                     src={selectedItem.url}
-                    alt={selectedItem.caption}
-                    className="max-h-[70vh] w-full object-contain"
+                    alt="Full view"
+                    className="max-h-full max-w-full rounded-xl shadow-2xl"
                   />
                 )}
               </div>
 
-              <div className="p-8 bg-brand-gray border-t border-white/5">
-                <div className="flex items-start justify-between gap-6">
+              {/* Caption / Edit Form */}
+              <div className="bg-black/50 backdrop-blur-md p-6 rounded-2xl border border-white/10 max-w-2xl mx-auto w-full">
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={editCaption}
+                      onChange={(e) => setEditCaption(e.target.value)}
+                      className="flex-1 bg-white/10 border-none rounded-lg px-4 py-2 text-white"
+                    />
+                    <button
+                      onClick={handleUpdate}
+                      className="bg-brand-accent text-brand-dark font-bold px-4 py-2 rounded-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
                   <div>
-                    <h3 className="text-2xl font-display font-bold text-white mb-2 uppercase tracking-wide">
+                    <h3 className="text-white font-bold text-lg">
                       {selectedItem.event_name}
                     </h3>
-                    <p className="text-brand-muted text-lg">
-                      {selectedItem.caption}
-                    </p>
+                    <p className="text-brand-muted">{selectedItem.caption}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-2 text-right shrink-0">
-                    <span className="text-brand-accent font-bold text-lg">
-                      {selectedItem.date}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-wider bg-white/10 px-3 py-1 rounded-full text-white/70">
-                      {selectedItem.type}
-                    </span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
