@@ -28,6 +28,7 @@ import Members from "./pages/admin/Member";
 import LeadershipPath from "./pages/LeadershipPath";
 import MediaManager from "./pages/admin/MediaManager";
 import ConnectCards from "./pages/admin/ConnectCards";
+import CalendarManager from "./pages/admin/CalendarManager";
 
 //
 
@@ -137,6 +138,18 @@ function App() {
               <ProtectedRoute>
                 <AdminLayout>
                   <ConnectCards />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 5. Calendar Manager Page */}
+          <Route
+            path="/admin/calendar"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <CalendarManager />
                 </AdminLayout>
               </ProtectedRoute>
             }
