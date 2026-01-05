@@ -5,12 +5,13 @@ import {
   Route,
   Navigate,
   Outlet,
-} from "react-router-dom"; // Added Outlet import
+} from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
 
 // Components
-import Navbar from "./components/layout/Navbar"; // Note: Ideally move this to components/layout/Navbar.tsx later
+import Navbar from "./components/layout/Navbar";
+import AdminLayout from "./components/layout/AdminLayout"; // ✅ Added AdminLayout import
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
@@ -23,6 +24,8 @@ import PrayerWall from "./pages/PrayerWall";
 import ConnectCard from "./pages/ConnectCard";
 import Media from "./pages/Media";
 import Journey from "./pages/Journey";
+import Members from "./pages/admin/Member";
+import LeadershipPath from "./pages/LeadershipPath";
 
 // 1. Create a Layout for Public Pages (Navbar + Content)
 const PublicLayout = () => {
@@ -30,7 +33,7 @@ const PublicLayout = () => {
     <>
       <Navbar />
       <main>
-        <Outlet /> {/* This represents the child route (Home, Events, etc.) */}
+        <Outlet />
       </main>
     </>
   );
@@ -79,17 +82,32 @@ function App() {
             <Route path="/connect" element={<ConnectCard />} />
             <Route path="/media" element={<Media />} />
             <Route path="/journey" element={<Journey />} />
+            <Route path="/journey/leadership" element={<LeadershipPath />} />
           </Route>
 
           {/* Group B: Standalone Routes (No Navbar) */}
           <Route path="/login" element={<Login />} />
 
-          {/* Group C: Admin Route (No Navbar, uses AdminLayout) */}
+          {/* Group C: Admin Routes */}
+          {/* 1. Main Dashboard Home */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 2. Members Management Page */}
+          <Route
+            path="/admin/members"
+            element={
+              <ProtectedRoute>
+                {/* Wrap Members in AdminLayout so the Sidebar appears */}
+                <AdminLayout>
+                  <Members />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
