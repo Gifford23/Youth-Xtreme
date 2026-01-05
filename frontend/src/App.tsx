@@ -27,6 +27,7 @@ import Journey from "./pages/Journey";
 import Members from "./pages/admin/Member";
 import LeadershipPath from "./pages/LeadershipPath";
 import MediaManager from "./pages/admin/MediaManager";
+import ConnectCards from "./pages/admin/ConnectCards";
 
 //
 
@@ -124,6 +125,18 @@ function App() {
               <ProtectedRoute>
                 <AdminLayout>
                   <MediaManager />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 4. Connect Cards Page */}
+          <Route
+            path="/admin/connect"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <ConnectCards />
                 </AdminLayout>
               </ProtectedRoute>
             }
