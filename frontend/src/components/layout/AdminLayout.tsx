@@ -25,6 +25,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/media", label: "Media Feed", Icon: CameraIcon }, // ✅ This works now!
     { to: "/admin", label: "Settings", Icon: SettingsIcon },
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
+    { to: "/admin/rsvps", label: "Registrations", Icon: TicketIcon },
+    { to: "/admin/prayer", label: "Prayer Wall", Icon: HandsIcon },
   ];
 
   // ✅ LOGOUT FUNCTION
@@ -325,6 +327,38 @@ const DateIcon: NavIcon = (props) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+    />
+  </svg>
+);
+
+const TicketIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+    />
+  </svg>
+);
+
+const HandsIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
     />
   </svg>
 );

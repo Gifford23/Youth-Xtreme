@@ -9,6 +9,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../lib/firebase";
+import Confetti from "react-confetti"; // ✅ Import for celebration
 
 interface AppEvent {
   id: string;
@@ -25,6 +26,7 @@ const EventDetails = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Form State
   const [rsvpData, setRsvpData] = useState({
     name: "",
     email: "",
@@ -33,7 +35,25 @@ const EventDetails = () => {
     notes: "",
   });
   const [rsvpLoading, setRsvpLoading] = useState(false);
-  const [rsvpMessage, setRsvpMessage] = useState<string>("");
+  const [rsvpMessage, setRsvpMessage] = useState<string>(""); // Keep for errors
+
+  // ✅ MODAL STATE
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [windowDimension, setWindowDimension] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  // Track window size for Confetti
+  useEffect(() => {
+    const handleResize = () =>
+      setWindowDimension({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const run = async () => {
@@ -166,12 +186,12 @@ const EventDetails = () => {
                     </div>
 
                     <div className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-brand-muted border border-white/10">
-                      Submissions saved
+                      Safe & Secure
                     </div>
                   </div>
 
-                  {rsvpMessage && (
-                    <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white">
+                  {rsvpMessage && !showSuccessModal && (
+                    <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 font-bold text-center">
                       {rsvpMessage}
                     </div>
                   )}
@@ -205,9 +225,8 @@ const EventDetails = () => {
                           created_at: serverTimestamp(),
                         });
 
-                        setRsvpMessage(
-                          "Thanks! Your RSVP has been submitted. See you there."
-                        );
+                        // ✅ SUCCESS: Trigger Modal & Reset Form
+                        setShowSuccessModal(true);
                         setRsvpData({
                           name: "",
                           email: "",
@@ -354,6 +373,46 @@ const EventDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ SUCCESS MODAL (With Confetti) */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowSuccessModal(false)}
+          />
+
+          {/* Confetti Cannon */}
+          <Confetti
+            width={windowDimension.width}
+            height={windowDimension.height}
+            recycle={false}
+            numberOfPieces={250}
+            gravity={0.15}
+          />
+
+          {/* Modal Content */}
+          <div className="relative bg-brand-gray border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+              <span className="text-4xl">🎉</span>
+            </div>
+            <h3 className="text-2xl font-display font-bold text-white uppercase tracking-wide mb-2">
+              You're In!
+            </h3>
+            <p className="text-brand-muted mb-8 leading-relaxed">
+              Your RSVP has been successfully received. We can't wait to see you
+              at <strong className="text-white">{event?.title}</strong>!
+            </p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-brand-accent text-brand-dark font-bold py-3.5 rounded-xl hover:bg-white transition-all shadow-lg hover:shadow-brand-accent/20"
+            >
+              Awesome, Thanks!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

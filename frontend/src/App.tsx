@@ -29,6 +29,8 @@ import LeadershipPath from "./pages/LeadershipPath";
 import MediaManager from "./pages/admin/MediaManager";
 import ConnectCards from "./pages/admin/ConnectCards";
 import CalendarManager from "./pages/admin/CalendarManager";
+import RSVPManager from "./pages/admin/RSVPManager";
+import PrayerManager from "./pages/admin/PrayerManager";
 
 //
 
@@ -150,6 +152,30 @@ function App() {
               <ProtectedRoute>
                 <AdminLayout>
                   <CalendarManager />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 6. RSVP Manager Page (✅ NEW ROUTE) */}
+          <Route
+            path="/admin/rsvps"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <RSVPManager />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 7. Prayer Manager Page */}
+          <Route
+            path="/admin/prayer"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <PrayerManager />
                 </AdminLayout>
               </ProtectedRoute>
             }
