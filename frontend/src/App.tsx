@@ -11,11 +11,11 @@ import { auth } from "./lib/firebase";
 
 // Components
 import Navbar from "./components/layout/Navbar";
-import AdminLayout from "./components/layout/AdminLayout"; // ✅ Added AdminLayout import
+import AdminLayout from "./components/layout/AdminLayout";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
-import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin"; // ✅ ADDED THIS MISSING IMPORT
 import EventDetails from "./pages/EventDetails";
 import Resources from "./pages/Resources";
 import ResourceDetails from "./pages/ResourceDetails";
@@ -26,6 +26,9 @@ import Media from "./pages/Media";
 import Journey from "./pages/Journey";
 import Members from "./pages/admin/Member";
 import LeadershipPath from "./pages/LeadershipPath";
+import MediaManager from "./pages/admin/MediaManager";
+
+//
 
 // 1. Create a Layout for Public Pages (Navbar + Content)
 const PublicLayout = () => {
@@ -89,12 +92,15 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Group C: Admin Routes */}
+
           {/* 1. Main Dashboard Home */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute>
-                <Admin />
+                <AdminLayout>
+                  <Admin />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
@@ -104,9 +110,20 @@ function App() {
             path="/admin/members"
             element={
               <ProtectedRoute>
-                {/* Wrap Members in AdminLayout so the Sidebar appears */}
                 <AdminLayout>
                   <Members />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 3. Media Manager Page */}
+          <Route
+            path="/admin/media"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <MediaManager />
                 </AdminLayout>
               </ProtectedRoute>
             }

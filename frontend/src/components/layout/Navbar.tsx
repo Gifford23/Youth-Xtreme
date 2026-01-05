@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
-import SproutIcon from "../../assets/sprout.png"; // ✅ Ensure this file exists
+import SproutIcon from "../../assets/sprout.png";
+import Logo from "../../assets/logo4.png"; // ✅ Ensure this file exists
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,12 +53,16 @@ const Navbar = () => {
     <nav className="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur-md border-b border-brand-border transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-            <div className="w-10 h-10 bg-brand-accent rounded-lg flex items-center justify-center font-bold text-brand-dark text-xl">
-              YX
-            </div>
-            <span className="font-display text-2xl font-bold text-brand-text tracking-wider">
-              YOUTH <span className="text-brand-accent">XTREME</span>
+          <Link to="/" className="flex-shrink-0 flex items-center gap-3">
+            {/* The Image Logo */}
+            <img
+              src={Logo}
+              alt="Youth Xtreme"
+              className="h-12 w-auto object-contain hover:scale-105 transition-transform duration-300"
+            />
+
+            <span className="font-display text-2xl font-bold text-brand-text tracking-wider hidden sm:block">
+              Cagayan <span className="text-brand-accent">de Oro</span>
             </span>
           </Link>
 
