@@ -23,10 +23,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
     { to: "/admin/media", label: "Media Feed", Icon: CameraIcon }, // ✅ This works now!
-    { to: "/admin", label: "Settings", Icon: SettingsIcon },
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
     { to: "/admin/rsvps", label: "Registrations", Icon: TicketIcon },
     { to: "/admin/prayer", label: "Prayer Wall", Icon: HandsIcon },
+    { to: "/admin", label: "Settings", Icon: SettingsIcon },
   ];
 
   // ✅ LOGOUT FUNCTION
