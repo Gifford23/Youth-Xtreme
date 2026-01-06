@@ -9,8 +9,14 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import EventCard from "../components/events/EventCard";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+// Components
+import EventCard from "../components/events/EventCard";
+import Mission from "../components/home/Mission";
+import Testimonials from "../components/home/Testimonials";
+import CallToAction from "../components/home/CallToAction";
 
 interface AppEvent {
   id: string;
@@ -32,6 +38,13 @@ interface MediaItem {
   featured: boolean;
   created_at: any;
 }
+
+// 🛠️ Helper: Extract YouTube ID
+const getYouTubeId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
 
 const Home = () => {
   const [events, setEvents] = useState<AppEvent[]>([]);
@@ -72,9 +85,7 @@ const Home = () => {
       const mediaData = snap.docs.map(
         (d) => ({ id: d.id, ...d.data() } as MediaItem)
       );
-      // ✅ Fixed TypeScript logic here
-      const featured = mediaData[0];
-      setFeaturedMedia(featured || null);
+      setFeaturedMedia(mediaData[0] || null);
     });
 
     return () => {
@@ -83,61 +94,68 @@ const Home = () => {
     };
   }, []);
 
+  // Determine YouTube ID for featured media
+  const youtubeId =
+    featuredMedia?.type === "video" ? getYouTubeId(featuredMedia.url) : null;
+
   return (
     <div className="relative isolate min-h-screen bg-brand-dark">
-      {/* 🎬 DYNAMIC HIGHLIGHT VIDEO BACKGROUND */}
-      <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden sm:-top-80 h-[100vh]">
-        {/* The Video Layer */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="https://plus.unsplash.com/premium_photo-1661377118520-287ec60a32f3?w=600&auto=format&fit=crop&q=60" // Fallback image
-        >
-          {/* 🔴 IMPORTANT: Replace this file with your actual highlight video! */}
-          <source src="/videos/hero-background.mp4" type="video/mp4" />
-        </video>
-
-        {/* Cinematic Gradient Overlays */}
-        <div className="absolute inset-0 bg-brand-dark/60 mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent"></div>
-      </div>
-
-      {/* Hero Content */}
-      <div className="relative mx-auto max-w-7xl px-6 py-48 sm:py-64 lg:px-8 flex flex-col items-center justify-center min-h-[90vh]">
-        <div className="text-center animate-fade-in-up">
-          {/* Small Tagline */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-brand-accent/10 px-4 py-1.5 text-sm font-bold text-brand-accent uppercase tracking-wider backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-            Happening Now at Youth Xtreme
-          </div>
-
-          <h1 className="font-display text-5xl font-bold tracking-tight text-white sm:text-8xl uppercase drop-shadow-2xl">
-            Faith. Fun. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
-              Future.
-            </span>
-          </h1>
-
-          <p className="mt-8 text-xl leading-8 text-gray-200 max-w-2xl mx-auto font-light drop-shadow-md">
-            We are a movement dedicated to empowering the next generation. Come
-            experience the energy, the community, and the purpose.
-          </p>
-
-          <div className="mt-12 flex items-center justify-center gap-x-6">
-            <Link
-              to="/events"
-              className="rounded-full bg-brand-accent px-10 py-4 text-base font-bold text-brand-dark shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:bg-white hover:scale-105 transition-all duration-300"
-            >
-              Check Upcoming Events
-            </Link>
-          </div>
+      {/* 🎬 HERO SECTION */}
+      <div className="relative h-screen w-full overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0">
+          <video
+            ref={videoRef}
+            className="h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
+          >
+            <source src="/videos/hero-background.mp4" type="video/mp4" />
+          </video>
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-brand-dark/50 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent"></div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Content */}
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-black/40 px-4 py-1.5 text-sm font-bold text-brand-accent uppercase tracking-wider backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+              Youth Xtreme
+            </div>
+
+            <h1 className="font-display text-6xl font-bold tracking-tight text-white sm:text-8xl uppercase drop-shadow-2xl mb-6">
+              Faith. Fun. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
+                Future.
+              </span>
+            </h1>
+
+            <p className="mt-4 text-xl leading-8 text-gray-200 max-w-2xl mx-auto font-light drop-shadow-md">
+              A movement empowering the next generation to live with purpose and
+              passion.
+            </p>
+
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Link
+                to="/events"
+                className="rounded-full bg-brand-accent px-10 py-4 text-base font-bold text-brand-dark shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:bg-white hover:scale-105 transition-all duration-300"
+              >
+                Join the Movement
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Scroll Arrow */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
           <svg
             className="w-6 h-6 text-white/50"
@@ -155,84 +173,27 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Weekly Highlight Section (Existing) */}
-      {featuredMedia && (
-        <div className="bg-brand-gray py-24 sm:py-32 border-t border-white/5 relative z-10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl font-display">
-                WEEKLY <span className="text-brand-accent">HIGHLIGHT</span>
-              </h2>
-              <p className="mt-2 text-lg leading-8 text-brand-muted">
-                Relive the best moments from our recent events.
-              </p>
-            </div>
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl group max-w-4xl mx-auto border border-white/10">
-              {featuredMedia.type === "video" ? (
-                <video
-                  className="w-full h-96 object-cover"
-                  poster={featuredMedia.thumbnail}
-                  controls
-                  playsInline
-                >
-                  <source src={featuredMedia.url} type="video/mp4" />
-                </video>
-              ) : (
-                <img
-                  src={featuredMedia.url}
-                  alt={featuredMedia.caption}
-                  className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none">
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-left">
-                  <h3 className="text-3xl font-bold text-white mb-2">
-                    {featuredMedia.event_name}
-                  </h3>
-                  <p className="text-brand-muted text-lg mb-2">
-                    {featuredMedia.caption}
-                  </p>
-                  <p className="text-brand-accent font-bold">
-                    {featuredMedia.date}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="text-center mt-12">
-              <Link
-                to="/media"
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-3 text-sm font-bold text-white hover:bg-white/10 transition-all"
-              >
-                View More Moments
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 🔥 MISSION SECTION */}
+      <Mission />
 
-      {/* Events Section (Existing) */}
+      {/* 📅 EVENTS SECTION */}
       <div className="bg-brand-dark py-24 sm:py-32 border-t border-white/5 relative z-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl font-display">
-              UPCOMING <span className="text-brand-accent">EVENTS</span>
-            </h2>
-            <p className="mt-2 text-lg leading-8 text-brand-muted">
-              Don't miss out on what God is doing at Youth Xtreme.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl font-display uppercase">
+                Upcoming <span className="text-brand-accent">Events</span>
+              </h2>
+              <p className="mt-2 text-lg leading-8 text-brand-muted">
+                Don't miss out on what God is doing at Youth Xtreme.
+              </p>
+            </div>
+            <Link
+              to="/events"
+              className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-white hover:text-brand-accent transition-colors border-b border-white/20 pb-1 hover:border-brand-accent"
+            >
+              View Full Calendar <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
           {loading ? (
@@ -240,7 +201,7 @@ const Home = () => {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-brand-accent"></div>
             </div>
           ) : events.length === 0 ? (
-            <div className="text-center py-20 text-brand-muted">
+            <div className="text-center py-20 text-brand-muted bg-brand-gray/30 rounded-3xl border border-white/5">
               <p>No events found. Check back soon!</p>
             </div>
           ) : (
@@ -263,19 +224,97 @@ const Home = () => {
             </div>
           )}
 
-          {events.length > 0 && (
-            <div className="mt-12 text-center">
-              <Link
-                to="/events"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-brand-accent hover:text-white transition-colors"
-              >
-                View All Events
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-          )}
+          <div className="mt-12 text-center md:hidden">
+            <Link
+              to="/events"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-brand-accent hover:text-white transition-colors"
+            >
+              View Full Calendar →
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* 🎥 WEEKLY HIGHLIGHT (Smart Player) */}
+      {featuredMedia && (
+        <div className="bg-brand-gray py-24 sm:py-32 border-t border-white/5 relative z-10 overflow-hidden">
+          {/* Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl font-display uppercase">
+                Weekly <span className="text-brand-accent">Highlight</span>
+              </h2>
+              <p className="mt-2 text-lg leading-8 text-brand-muted">
+                Relive the best moments from our recent gatherings.
+              </p>
+            </div>
+
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group max-w-4xl mx-auto border border-white/10 bg-black">
+              {/* SMART PLAYER LOGIC */}
+              {featuredMedia.type === "video" ? (
+                youtubeId ? (
+                  <iframe
+                    className="w-full h-96 md:h-[500px]"
+                    src={`https://www.youtube.com/embed/${youtubeId}?rel=0`}
+                    title="YouTube video player"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <video
+                    className="w-full h-96 md:h-[500px] object-cover"
+                    poster={featuredMedia.thumbnail}
+                    controls
+                    playsInline
+                  >
+                    <source src={featuredMedia.url} type="video/mp4" />
+                  </video>
+                )
+              ) : (
+                <img
+                  src={featuredMedia.url}
+                  alt={featuredMedia.caption}
+                  className="w-full h-96 md:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              )}
+
+              {/* Caption Overlay (Only for Photos or non-iframe videos) */}
+              {!youtubeId && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none">
+                  <div className="absolute bottom-0 left-0 right-0 p-8 text-left">
+                    <h3 className="text-3xl font-bold text-white mb-2">
+                      {featuredMedia.event_name}
+                    </h3>
+                    <p className="text-brand-muted text-lg mb-2">
+                      {featuredMedia.caption}
+                    </p>
+                    <p className="text-brand-accent font-bold">
+                      {featuredMedia.date}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link
+                to="/media"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-3 text-sm font-bold text-white hover:bg-white/10 transition-all hover:scale-105"
+              >
+                Watch More Moments
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 💬 TESTIMONIALS */}
+      <Testimonials />
+
+      {/* 🚀 CALL TO ACTION */}
+      <CallToAction />
     </div>
   );
 };

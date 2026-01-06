@@ -90,6 +90,7 @@ function App() {
             <Route path="/media" element={<Media />} />
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
+            <Route path="/connect" element={<ConnectCard />} />
           </Route>
 
           {/* Group B: Standalone Routes (No Navbar) */}
