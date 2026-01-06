@@ -16,6 +16,12 @@ interface UserData {
     life_group: boolean;
     dream_team: boolean;
   };
+  // ✅ NEW: Booklet Track
+  booklet?: {
+    crossroads: boolean;
+    crossover: boolean;
+    crossways: boolean;
+  };
 }
 
 const Journey = () => {
@@ -29,8 +35,8 @@ const Journey = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const [recycleConfetti, setRecycleConfetti] = useState(true); // Controls if confetti keeps spawning
-  const [showConfetti, setShowConfetti] = useState(false); // Controls if component is rendered
+  const [recycleConfetti, setRecycleConfetti] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const detectSize = () => {
     setWindowDimension({
@@ -58,6 +64,8 @@ const Journey = () => {
     const unsubDoc = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as UserData;
+
+        // Initialize Foundation Steps if missing
         if (!data.steps) {
           updateDoc(userRef, {
             steps: {
@@ -68,6 +76,18 @@ const Journey = () => {
             },
           });
         }
+
+        // ✅ Initialize Booklet Steps if missing
+        if (!data.booklet) {
+          updateDoc(userRef, {
+            booklet: {
+              crossroads: false,
+              crossover: false,
+              crossways: false,
+            },
+          });
+        }
+
         setUserData(data);
       }
       setLoading(false);
@@ -75,10 +95,18 @@ const Journey = () => {
     return () => unsubDoc();
   }, [user]);
 
+  // Toggle Foundation Steps
   const toggleStep = async (stepKey: string, currentValue: boolean) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
     await updateDoc(userRef, { [`steps.${stepKey}`]: !currentValue });
+  };
+
+  // ✅ Toggle Booklet Steps
+  const toggleBooklet = async (stepKey: string, currentValue: boolean) => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, { [`booklet.${stepKey}`]: !currentValue });
   };
 
   const calculateProgress = () => {
@@ -91,17 +119,13 @@ const Journey = () => {
   const progress = calculateProgress();
   const isComplete = progress === 100;
 
-  // ✅ CONFETTI TIMER LOGIC
   useEffect(() => {
     if (isComplete) {
       setShowConfetti(true);
       setRecycleConfetti(true);
-
-      // Stop generating NEW confetti after 7 seconds
       const stopTimer = setTimeout(() => {
         setRecycleConfetti(false);
       }, 7000);
-
       return () => clearTimeout(stopTimer);
     } else {
       setShowConfetti(false);
@@ -117,13 +141,12 @@ const Journey = () => {
 
   return (
     <div className="min-h-screen bg-brand-dark pt-24 pb-20 px-4 relative overflow-x-hidden">
-      {/* Confetti Overlay */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
           <Confetti
             width={windowDimension.width}
             height={windowDimension.height}
-            recycle={recycleConfetti} // Stops raining after 7s, existing pieces fall naturally
+            recycle={recycleConfetti}
             numberOfPieces={400}
             gravity={0.2}
           />
@@ -139,7 +162,6 @@ const Journey = () => {
               : "bg-brand-gray/50 border-white/5"
           }`}
         >
-          {/* Avatar */}
           <div
             className={`w-24 h-24 rounded-full border-4 p-1 transition-colors ${
               isComplete ? "border-brand-accent" : "border-white/10"
@@ -205,14 +227,12 @@ const Journey = () => {
           </div>
         </div>
 
-        {/* ✅ NEXT LEVEL: LEADERSHIP PATH (Only shows when 100%) */}
+        {/* LEADERSHIP PATH UNLOCK */}
         {isComplete && (
           <div className="mb-12 animate-fade-in-up">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-1 shadow-2xl">
               <div className="bg-brand-dark rounded-[22px] p-8 md:p-10 relative overflow-hidden">
-                {/* Background Effect */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
-
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="text-center md:text-left">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-500/30">
@@ -226,10 +246,9 @@ const Journey = () => {
                       influence others and lead with purpose.
                     </p>
                   </div>
-
                   <button
-                    onClick={() => navigate("/journey/leadership")} // ✅ Update this line
-                    className="..."
+                    onClick={() => navigate("/journey/leadership")}
+                    className="flex items-center gap-2 bg-white text-blue-900 font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform"
                   >
                     Enter Leadership Track
                     <svg
@@ -252,12 +271,58 @@ const Journey = () => {
           </div>
         )}
 
-        {/* GROWTH TRACK STEPS (Hidden or Dimmed if complete? I kept them visible so they can see what they achieved) */}
+        {/* ✅ NEW SECTION: DISCIPLESHIP TRACK (The Booklet) */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold text-white mb-6 pl-2 border-l-4 border-yellow-500">
+            DISCIPLESHIP 101: THE BOOKLET
+          </h2>
+          <div className="grid gap-4">
+            <StepCard
+              title="Crossroads"
+              description="Standing at the point of decision. Choosing the path of faith."
+              isCompleted={userData?.booklet?.crossroads || false}
+              onClick={() =>
+                toggleBooklet(
+                  "crossroads",
+                  userData?.booklet?.crossroads || false
+                )
+              }
+              icon="🛤️"
+              theme="yellow"
+            />
+            <StepCard
+              title="Crossover"
+              description="Leaving the old life behind and stepping into the new."
+              isCompleted={userData?.booklet?.crossover || false}
+              onClick={() =>
+                toggleBooklet(
+                  "crossover",
+                  userData?.booklet?.crossover || false
+                )
+              }
+              icon="🌉"
+              theme="yellow"
+            />
+            <StepCard
+              title="Crossways"
+              description="Walking the daily Christian life and lifestyle."
+              isCompleted={userData?.booklet?.crossways || false}
+              onClick={() =>
+                toggleBooklet(
+                  "crossways",
+                  userData?.booklet?.crossways || false
+                )
+              }
+              icon="🧭"
+              theme="yellow"
+            />
+          </div>
+        </div>
+
+        {/* FOUNDATION STEPS */}
         <div
           className={`grid gap-6 transition-opacity duration-1000 ${
-            isComplete
-              ? "opacity-50 grayscale hover:grayscale-0 hover:opacity-100"
-              : ""
+            isComplete ? "opacity-50 hover:opacity-100" : ""
           }`}
         >
           <h2 className="text-xl font-bold text-white mb-4 pl-2 border-l-4 border-brand-accent">
@@ -305,44 +370,65 @@ const Journey = () => {
   );
 };
 
-const StepCard = ({ title, description, isCompleted, onClick, icon }: any) => (
-  <div
-    onClick={onClick}
-    className={`group cursor-pointer relative overflow-hidden rounded-2xl border transition-all duration-300 p-6 flex items-center gap-6 ${
-      isCompleted
-        ? "bg-brand-accent/10 border-brand-accent"
-        : "bg-brand-gray border-white/5 hover:border-white/20"
-    }`}
-  >
+const StepCard = ({
+  title,
+  description,
+  isCompleted,
+  onClick,
+  icon,
+  theme = "neon",
+}: any) => {
+  const isNeon = theme === "neon";
+
+  const activeBg = isNeon
+    ? "bg-brand-accent/10 border-brand-accent"
+    : "bg-yellow-500/10 border-yellow-500";
+  const activeText = isNeon ? "text-brand-accent" : "text-yellow-500";
+  const activeIconBg = isNeon
+    ? "bg-brand-accent text-brand-dark"
+    : "bg-yellow-500 text-black";
+
+  return (
     <div
-      className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-colors ${
+      onClick={onClick}
+      className={`group cursor-pointer relative overflow-hidden rounded-2xl border transition-all duration-300 p-6 flex items-center gap-6 ${
         isCompleted
-          ? "bg-brand-accent text-brand-dark"
-          : "bg-white/5 text-white grayscale group-hover:grayscale-0"
+          ? activeBg
+          : "bg-brand-gray border-white/5 hover:border-white/20"
       }`}
     >
-      {isCompleted ? "✓" : icon}
-    </div>
-    <div className="flex-1">
-      <h3
-        className={`font-bold text-lg mb-1 ${
-          isCompleted ? "text-brand-accent" : "text-white"
+      <div
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-colors ${
+          isCompleted
+            ? activeIconBg
+            : "bg-white/5 text-white grayscale group-hover:grayscale-0"
         }`}
       >
-        {title}
-      </h3>
-      <p className="text-sm text-brand-muted">{description}</p>
+        {isCompleted ? "✓" : icon}
+      </div>
+      <div className="flex-1">
+        <h3
+          className={`font-bold text-lg mb-1 ${
+            isCompleted ? activeText : "text-white"
+          }`}
+        >
+          {title}
+        </h3>
+        <p className="text-sm text-brand-muted">{description}</p>
+      </div>
+      <div
+        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+          isCompleted
+            ? `border-${isNeon ? "brand-accent" : "yellow-500"} bg-${
+                isNeon ? "brand-accent" : "yellow-500"
+              }`
+            : "border-brand-muted"
+        }`}
+      >
+        {isCompleted && <div className="w-2 h-2 rounded-full bg-brand-dark" />}
+      </div>
     </div>
-    <div
-      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-        isCompleted
-          ? "border-brand-accent bg-brand-accent"
-          : "border-brand-muted"
-      }`}
-    >
-      {isCompleted && <div className="w-2 h-2 rounded-full bg-brand-dark" />}
-    </div>
-  </div>
-);
+  );
+};
 
 export default Journey;

@@ -38,11 +38,12 @@ const Navbar = () => {
     }
   };
 
+  // ✅ UPDATED: 'Prayer' is now hidden for guests (non-members)
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Events", path: "/events" },
     { name: "Calendar", path: "/calendar" },
-    { name: "Prayer", path: "/prayer-wall" },
+    ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []), // Only shows if logged in
     { name: "Resources", path: "/resources" },
     { name: "Media", path: "/media" },
   ];
