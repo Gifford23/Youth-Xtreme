@@ -15,7 +15,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Login from "./pages/Login";
-import Admin from "./pages/Admin"; // ✅ ADDED THIS MISSING IMPORT
+import Admin from "./pages/Admin";
 import EventDetails from "./pages/EventDetails";
 import Resources from "./pages/Resources";
 import ResourceDetails from "./pages/ResourceDetails";
@@ -32,9 +32,32 @@ import CalendarManager from "./pages/admin/CalendarManager";
 import RSVPManager from "./pages/admin/RSVPManager";
 import PrayerManager from "./pages/admin/PrayerManager";
 import UserDashboard from "./pages/UserDashboard";
-//
+import LogoIcon from "./assets/logo-icon.png";
 
-// 1. Create a Layout for Public Pages (Navbar + Content)
+// --- FLOATING MESSENGER COMPONENT ---
+const FloatingMessenger = () => (
+  <a
+    href="https://m.me/yxcdo"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-brand-dark border-2 border-brand-accent shadow-[0_4px_20px_rgba(204,255,0,0.4)] hover:scale-110 hover:shadow-[0_6px_25px_rgba(204,255,0,0.6)] transition-all duration-300 group overflow-hidden"
+    title="Chat with us on Messenger"
+  >
+    {/* ✅ Replaced SVG with Logo Image */}
+    <img
+      src={LogoIcon}
+      alt="Chat with us"
+      className="w-full h-full object-cover"
+    />
+
+    {/* Optional Tooltip */}
+    <span className="absolute right-full mr-3 bg-white text-black text-xs font-bold px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">
+      Chat with us
+    </span>
+  </a>
+);
+
+// 1. Create a Layout for Public Pages (Navbar + Content + Messenger)
 const PublicLayout = () => {
   return (
     <>
@@ -42,6 +65,7 @@ const PublicLayout = () => {
       <main>
         <Outlet />
       </main>
+      <FloatingMessenger />
     </>
   );
 };
@@ -90,7 +114,6 @@ function App() {
             <Route path="/media" element={<Media />} />
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
-            <Route path="/connect" element={<ConnectCard />} />
             <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 

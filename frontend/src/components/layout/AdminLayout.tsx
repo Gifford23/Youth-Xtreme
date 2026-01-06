@@ -19,7 +19,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const navItems = [
     { to: "/", label: "Home", Icon: HomeIcon },
-    { to: "/events", label: "Events", Icon: CalendarIcon },
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
     { to: "/admin/media", label: "Media Feed", Icon: CameraIcon }, // ✅ This works now!
