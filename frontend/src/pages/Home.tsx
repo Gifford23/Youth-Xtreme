@@ -17,6 +17,9 @@ import EventCard from "../components/events/EventCard";
 import Mission from "../components/home/Mission";
 import Testimonials from "../components/home/Testimonials";
 import CallToAction from "../components/home/CallToAction";
+import VerseOfTheDay from "../components/home/VerseOfTheDay";
+
+// Assets
 
 interface AppEvent {
   id: string;
@@ -39,7 +42,6 @@ interface MediaItem {
   created_at: any;
 }
 
-// 🛠️ Helper: Extract YouTube ID
 const getYouTubeId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
@@ -58,7 +60,6 @@ const Home = () => {
       return;
     }
 
-    // 1. Fetch Events
     const eventsQuery = query(
       collection(db, "events"),
       orderBy("event_date", "asc"),
@@ -75,7 +76,6 @@ const Home = () => {
       setLoading(false);
     });
 
-    // 2. Fetch Featured Media
     const mediaQuery = query(
       collection(db, "media"),
       orderBy("created_at", "desc"),
@@ -94,69 +94,83 @@ const Home = () => {
     };
   }, []);
 
-  // Determine YouTube ID for featured media
   const youtubeId =
     featuredMedia?.type === "video" ? getYouTubeId(featuredMedia.url) : null;
 
   return (
     <div className="relative isolate min-h-screen bg-brand-dark">
-      {/* 🎬 HERO SECTION */}
-      <div className="relative h-screen w-full overflow-hidden">
-        {/* Video Background */}
+      {/* 🎬 HERO SECTION (SPLIT LAYOUT) */}
+      <div className="relative min-h-screen w-full overflow-hidden flex items-center">
+        {/* Background Image */}
         <div className="absolute inset-0">
-          <video
-            ref={videoRef}
+          <img
+            src="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
+            alt="Youth Xtreme Hero"
             className="h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
-          >
-            <source src="/videos/hero-background.mp4" type="video/mp4" />
-          </video>
+          />
           {/* Overlays */}
-          <div className="absolute inset-0 bg-brand-dark/50 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-brand-dark/60 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/90 via-brand-dark/40 to-transparent"></div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-black/40 px-4 py-1.5 text-sm font-bold text-brand-accent uppercase tracking-wider backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-              Youth Xtreme
-            </div>
+        {/* Content Container (Grid) */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 py-24 lg:py-0">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* LEFT: Hero Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center lg:text-left"
+            >
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-accent/30 bg-black/40 px-4 py-1.5 text-sm font-bold text-brand-accent uppercase tracking-wider backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
+                Youth Xtreme
+              </div>
 
-            <h1 className="font-display text-6xl font-bold tracking-tight text-white sm:text-8xl uppercase drop-shadow-2xl mb-6">
-              Faith. Fun. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
-                Future.
-              </span>
-            </h1>
+              <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white uppercase drop-shadow-2xl mb-6 leading-tight">
+                Faith. Fun. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
+                  Future.
+                </span>
+              </h1>
 
-            <p className="mt-4 text-xl leading-8 text-gray-200 max-w-2xl mx-auto font-light drop-shadow-md">
-              A movement empowering the next generation to live with purpose and
-              passion.
-            </p>
+              <p className="mt-4 text-lg md:text-xl leading-8 text-gray-200 font-light drop-shadow-md max-w-lg mx-auto lg:mx-0">
+                A movement empowering the next generation to live with purpose
+                and passion.
+              </p>
 
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                to="/events"
-                className="rounded-full bg-brand-accent px-10 py-4 text-base font-bold text-brand-dark shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:bg-white hover:scale-105 transition-all duration-300"
-              >
-                Join the Movement
-              </Link>
-            </div>
-          </motion.div>
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link
+                  to="/events"
+                  className="w-full sm:w-auto rounded-full bg-brand-accent px-8 py-4 text-base font-bold text-brand-dark shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 text-center"
+                >
+                  Join the Movement
+                </Link>
+                <Link
+                  to="/about"
+                  className="w-full sm:w-auto rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-bold text-white hover:bg-white/10 transition-all text-center backdrop-blur-sm"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* RIGHT: Verse Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex justify-center lg:justify-end"
+            >
+              {/* ✅ Added lg:mx-0 to align right on large screens */}
+              <VerseOfTheDay className="lg:mx-0" />
+            </motion.div>
+          </div>
         </div>
 
         {/* Scroll Arrow */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden lg:block">
           <svg
             className="w-6 h-6 text-white/50"
             fill="none"
@@ -238,7 +252,6 @@ const Home = () => {
       {/* 🎥 WEEKLY HIGHLIGHT (Smart Player) */}
       {featuredMedia && (
         <div className="bg-brand-gray py-24 sm:py-32 border-t border-white/5 relative z-10 overflow-hidden">
-          {/* Background Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
 
           <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
@@ -252,7 +265,6 @@ const Home = () => {
             </div>
 
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group max-w-4xl mx-auto border border-white/10 bg-black">
-              {/* SMART PLAYER LOGIC */}
               {featuredMedia.type === "video" ? (
                 youtubeId ? (
                   <iframe
@@ -280,7 +292,6 @@ const Home = () => {
                 />
               )}
 
-              {/* Caption Overlay (Only for Photos or non-iframe videos) */}
               {!youtubeId && (
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none">
                   <div className="absolute bottom-0 left-0 right-0 p-8 text-left">

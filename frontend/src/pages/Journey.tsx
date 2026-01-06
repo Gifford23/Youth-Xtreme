@@ -4,6 +4,7 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Confetti from "react-confetti";
+import VerseOfTheDay from "../components/home/VerseOfTheDay";
 
 interface UserData {
   name: string;
@@ -16,7 +17,6 @@ interface UserData {
     life_group: boolean;
     dream_team: boolean;
   };
-  // ✅ NEW: Booklet Track
   booklet?: {
     crossroads: boolean;
     crossover: boolean;
@@ -29,6 +29,9 @@ const Journey = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+
+  // ✅ Verse Visibility State
+  const [showVerse, setShowVerse] = useState(false);
 
   // Confetti Control
   const [windowDimension, setWindowDimension] = useState({
@@ -77,7 +80,7 @@ const Journey = () => {
           });
         }
 
-        // ✅ Initialize Booklet Steps if missing
+        // Initialize Booklet Steps if missing
         if (!data.booklet) {
           updateDoc(userRef, {
             booklet: {
@@ -95,14 +98,12 @@ const Journey = () => {
     return () => unsubDoc();
   }, [user]);
 
-  // Toggle Foundation Steps
   const toggleStep = async (stepKey: string, currentValue: boolean) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
     await updateDoc(userRef, { [`steps.${stepKey}`]: !currentValue });
   };
 
-  // ✅ Toggle Booklet Steps
   const toggleBooklet = async (stepKey: string, currentValue: boolean) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
@@ -156,14 +157,15 @@ const Journey = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* HEADER SECTION */}
         <div
-          className={`flex flex-col md:flex-row items-center gap-6 mb-8 p-8 rounded-3xl border shadow-2xl transition-all duration-500 ${
+          className={`relative flex flex-col md:flex-row items-center gap-6 mb-4 p-8 rounded-3xl border shadow-2xl transition-all duration-500 ${
             isComplete
               ? "bg-brand-accent/10 border-brand-accent shadow-[0_0_50px_rgba(204,255,0,0.3)]"
               : "bg-brand-gray/50 border-white/5"
           }`}
         >
+          {/* Avatar */}
           <div
-            className={`w-24 h-24 rounded-full border-4 p-1 transition-colors ${
+            className={`w-24 h-24 rounded-full border-4 p-1 shrink-0 transition-colors ${
               isComplete ? "border-brand-accent" : "border-white/10"
             }`}
           >
@@ -180,6 +182,7 @@ const Journey = () => {
             )}
           </div>
 
+          {/* Text Info */}
           <div className="text-center md:text-left flex-1">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
               {isComplete ? "FOUNDATION COMPLETE!" : "MY JOURNEY"}
@@ -199,7 +202,23 @@ const Journey = () => {
             </p>
           </div>
 
-          <div className="relative w-24 h-24 flex items-center justify-center">
+          {/* ✅ VERSE BUTTON (Positioned between text and circle on Desktop) */}
+          <button
+            onClick={() => setShowVerse(!showVerse)}
+            className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+              showVerse
+                ? "bg-brand-accent text-brand-dark border-brand-accent shadow-[0_0_15px_rgba(204,255,0,0.4)]"
+                : "bg-white/5 text-brand-muted border-white/10 hover:border-brand-accent hover:text-white"
+            }`}
+          >
+            <span className="text-lg">📖</span>
+            <span className="font-bold uppercase tracking-wider text-xs hidden sm:inline">
+              Verse of the Day
+            </span>
+          </button>
+
+          {/* Progress Circle */}
+          <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <path
                 className="text-brand-gray"
@@ -225,6 +244,15 @@ const Journey = () => {
               {progress}%
             </div>
           </div>
+        </div>
+
+        {/* ✅ COLLAPSIBLE VERSE SECTION */}
+        <div
+          className={`transition-all duration-500 overflow-hidden ${
+            showVerse ? "max-h-96 opacity-100 mb-12" : "max-h-0 opacity-0 mb-0"
+          }`}
+        >
+          <VerseOfTheDay />
         </div>
 
         {/* LEADERSHIP PATH UNLOCK */}
@@ -271,7 +299,7 @@ const Journey = () => {
           </div>
         )}
 
-        {/* ✅ NEW SECTION: DISCIPLESHIP TRACK (The Booklet) */}
+        {/* BOOKLET TRACK */}
         <div className="mb-12">
           <h2 className="text-xl font-bold text-white mb-6 pl-2 border-l-4 border-yellow-500">
             DISCIPLESHIP 101: THE BOOKLET
