@@ -149,6 +149,12 @@ const Members = () => {
     return "text-white bg-blue-500 border-blue-500";
   };
 
+  const getStatusBadgeColor = () => {
+    if (viewMode === "foundation") return "text-brand-accent bg-brand-accent/10 border-brand-accent";
+    if (viewMode === "booklet") return "text-yellow-500 bg-yellow-500/10 border-yellow-500";
+    return "text-blue-400 bg-blue-500/10 border-blue-500";
+  };
+
   if (loading)
     return (
       <div className="p-8 text-brand-muted">Loading members directory...</div>
@@ -263,6 +269,8 @@ const Members = () => {
                 const progress = getProgress(member);
                 const themeColor = getThemeColor();
                 const checkColor = getCheckColor();
+                const badgeColor = getStatusBadgeColor();
+                const isComplete = progress === 100;
 
                 return (
                   <tr
@@ -294,25 +302,33 @@ const Members = () => {
                     </td>
 
                     <td className="p-4 w-32">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`text-xs font-bold ${
-                            viewMode === "foundation"
-                              ? "text-brand-accent"
-                              : viewMode === "booklet" 
-                              ? "text-yellow-500"
-                              : "text-blue-400"
-                          }`}
-                        >
-                          {progress}%
-                        </span>
-                        <div className="flex-1 h-1.5 bg-brand-dark rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 ${themeColor}`}
-                            style={{ width: `${progress}%` }}
-                          />
+                      {/* ✅ CONDITIONALLY RENDER STATUS BADGE OR PROGRESS BAR */}
+                      {isComplete ? (
+                         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider shadow-sm ${badgeColor}`}>
+                           <span className="text-sm">★</span>
+                           <span>Completed</span>
+                         </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs font-bold ${
+                              viewMode === "foundation"
+                                ? "text-brand-accent"
+                                : viewMode === "booklet" 
+                                ? "text-yellow-500"
+                                : "text-blue-400"
+                            }`}
+                          >
+                            {progress}%
+                          </span>
+                          <div className="flex-1 h-1.5 bg-brand-dark rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-500 ${themeColor}`}
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </td>
 
                     {columns.map((col) => (

@@ -31,7 +31,7 @@ import ConnectCards from "./pages/admin/ConnectCards";
 import CalendarManager from "./pages/admin/CalendarManager";
 import RSVPManager from "./pages/admin/RSVPManager";
 import PrayerManager from "./pages/admin/PrayerManager";
-
+import UserDashboard from "./pages/UserDashboard";
 //
 
 // 1. Create a Layout for Public Pages (Navbar + Content)
@@ -91,6 +91,7 @@ function App() {
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
             <Route path="/connect" element={<ConnectCard />} />
+            <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 
           {/* Group B: Standalone Routes (No Navbar) */}

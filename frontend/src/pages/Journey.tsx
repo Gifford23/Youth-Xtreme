@@ -5,12 +5,15 @@ import { auth, db } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Confetti from "react-confetti";
 import VerseOfTheDay from "../components/home/VerseOfTheDay";
+import EditProfileModal from "../components/profile/EditProfileModal";
 
 interface UserData {
   name: string;
   email: string;
   photo_url: string;
   role: string;
+  bio?: string;
+  phone?: string;
   steps?: {
     salvation: boolean;
     baptism: boolean;
@@ -30,8 +33,10 @@ const Journey = () => {
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  // ✅ Verse Visibility State
+  // Verse Visibility State
   const [showVerse, setShowVerse] = useState(false);
+  // Profile Modal State
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   // Confetti Control
   const [windowDimension, setWindowDimension] = useState({
@@ -154,6 +159,15 @@ const Journey = () => {
         </div>
       )}
 
+      {/* EDIT PROFILE MODAL */}
+      {isEditProfileOpen && user && userData && (
+        <EditProfileModal
+          user={user}
+          userData={userData}
+          onClose={() => setIsEditProfileOpen(false)}
+        />
+      )}
+
       <div className="max-w-4xl mx-auto relative z-10">
         {/* HEADER SECTION */}
         <div
@@ -163,23 +177,46 @@ const Journey = () => {
               : "bg-brand-gray/50 border-white/5"
           }`}
         >
-          {/* Avatar */}
-          <div
-            className={`w-24 h-24 rounded-full border-4 p-1 shrink-0 transition-colors ${
-              isComplete ? "border-brand-accent" : "border-white/10"
-            }`}
-          >
-            {userData?.photo_url ? (
-              <img
-                src={userData.photo_url}
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full rounded-full bg-brand-gray flex items-center justify-center text-3xl font-bold text-white">
-                {userData?.name?.charAt(0) || "U"}
-              </div>
-            )}
+          {/* Avatar with Edit Overlay */}
+          <div className="relative group shrink-0">
+            <div
+              className={`w-24 h-24 rounded-full border-4 p-1 transition-colors ${
+                isComplete ? "border-brand-accent" : "border-white/10"
+              }`}
+            >
+              {userData?.photo_url ? (
+                <img
+                  src={userData.photo_url}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-brand-gray flex items-center justify-center text-3xl font-bold text-white">
+                  {userData?.name?.charAt(0) || "U"}
+                </div>
+              )}
+            </div>
+
+            {/* Edit Button (Visible on Hover) */}
+            <button
+              onClick={() => setIsEditProfileOpen(true)}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm cursor-pointer border border-white/20"
+              title="Edit Profile"
+            >
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+            </button>
           </div>
 
           {/* Text Info */}
@@ -187,7 +224,7 @@ const Journey = () => {
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
               {isComplete ? "FOUNDATION COMPLETE!" : "MY JOURNEY"}
             </h1>
-            <p className="text-brand-muted">
+            <p className="text-brand-muted mb-2">
               {isComplete ? (
                 <span className="text-brand-accent font-bold">
                   You are ready for the next level.
@@ -200,21 +237,38 @@ const Journey = () => {
                 </>
               )}
             </p>
+
+            {/* Show Bio if exists */}
+            {userData?.bio && (
+              <p className="text-sm text-gray-400 italic font-serif">
+                "{userData.bio}"
+              </p>
+            )}
+
+            {/* Mobile Edit Button */}
+            <button
+              onClick={() => setIsEditProfileOpen(true)}
+              className="md:hidden mt-3 text-xs font-bold text-brand-accent hover:text-white uppercase tracking-wider border border-brand-accent/30 px-3 py-1 rounded-full"
+            >
+              Edit Profile
+            </button>
           </div>
 
-          {/* ✅ VERSE BUTTON (Positioned between text and circle on Desktop) */}
+          {/* ✅ VERSE BUTTON (Now visible on mobile too) */}
           <button
             onClick={() => setShowVerse(!showVerse)}
-            className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
               showVerse
                 ? "bg-brand-accent text-brand-dark border-brand-accent shadow-[0_0_15px_rgba(204,255,0,0.4)]"
                 : "bg-white/5 text-brand-muted border-white/10 hover:border-brand-accent hover:text-white"
             }`}
           >
-            <span className="text-lg">📖</span>
+            <span className="text-lg">✨</span>
             <span className="font-bold uppercase tracking-wider text-xs hidden sm:inline">
-              Verse of the Day
+              Inspiration
             </span>
+            {/* Icon only on mobile */}
+            <span className="font-bold text-sm sm:hidden">Verse</span>
           </button>
 
           {/* Progress Circle */}
@@ -246,7 +300,7 @@ const Journey = () => {
           </div>
         </div>
 
-        {/* ✅ COLLAPSIBLE VERSE SECTION */}
+        {/* ✅ COLLAPSIBLE VERSE SECTION (Placed below header) */}
         <div
           className={`transition-all duration-500 overflow-hidden ${
             showVerse ? "max-h-96 opacity-100 mb-12" : "max-h-0 opacity-0 mb-0"

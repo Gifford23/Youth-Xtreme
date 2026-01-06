@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -10,24 +10,35 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Dropdown state
   const location = useLocation();
   const navigate = useNavigate();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
+        if (userDoc.exists()) {
+          setIsAdmin(userDoc.data().role === "admin");
         }
       } else {
         setIsAdmin(false);
       }
     });
     return () => unsubscribe();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSignOut = async () => {
@@ -38,12 +49,11 @@ const Navbar = () => {
     }
   };
 
-  // ✅ UPDATED: 'Prayer' is now hidden for guests (non-members)
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Events", path: "/events" },
     { name: "Calendar", path: "/calendar" },
-    ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []), // Only shows if logged in
+    ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []),
     { name: "Resources", path: "/resources" },
     { name: "Media", path: "/media" },
   ];
@@ -55,13 +65,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex-shrink-0 flex items-center gap-3">
-            {/* The Image Logo */}
             <img
               src={Logo}
               alt="Youth Xtreme"
               className="h-12 w-auto object-contain hover:scale-105 transition-transform duration-300"
             />
-
             <span className="font-display text-2xl font-bold text-brand-text tracking-wider hidden sm:block">
               Cagayan <span className="text-brand-accent">de Oro</span>
             </span>
@@ -86,74 +94,111 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* RIGHT SIDE: Smart Buttons */}
+          {/* RIGHT SIDE: Profile Section */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                {isAdmin ? (
-                  <Link to="/admin">
-                    <button className="text-brand-accent hover:text-white font-bold text-sm px-4 py-2 border border-brand-accent/30 rounded-lg hover:bg-brand-accent/10 transition-all">
-                      Admin Dashboard
-                    </button>
-                  </Link>
-                ) : (
-                  // ✅ NEW: Just the Circle Logo (No Text)
-                  <Link to="/journey" title="My Journey">
-                    <button className="w-10 h-10 flex items-center justify-center rounded-full border border-white/20 hover:border-brand-accent hover:bg-white/10 transition-all group">
-                      <img
-                        src={SproutIcon}
-                        alt="Growth"
-                        className="w-6 h-6 object-contain group-hover:scale-110 transition-transform"
-                      />
-                    </button>
+                
+                {/* 1. SPROUT ICON (Stuck on Navbar) - Links to My Journey */}
+                {!isAdmin && (
+                  <Link 
+                    to="/journey" 
+                    title="My Journey"
+                    className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all group ${
+                      isActive("/journey") 
+                      ? "bg-brand-accent/20 border-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.4)]" 
+                      : "border-white/20 hover:border-brand-accent hover:bg-white/5"
+                    }`}
+                  >
+                    <img
+                      src={SproutIcon}
+                      alt="Growth"
+                      className="w-6 h-6 object-contain group-hover:scale-110 transition-transform"
+                    />
                   </Link>
                 )}
 
-                <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="User"
-                      className="w-8 h-8 rounded-full border border-white/20"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-brand-gray flex items-center justify-center text-xs font-bold text-brand-muted">
-                      {user.email?.charAt(0).toUpperCase()}
+                {/* 2. PROFILE AVATAR & DROPDOWN */}
+                <div className="relative pl-4 border-l border-white/10" ref={profileMenuRef}>
+                  <button 
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="flex items-center gap-3 group focus:outline-none"
+                  >
+                    <div className="text-right hidden lg:block">
+                      <p className="text-[10px] uppercase font-bold text-brand-muted tracking-wider">
+                        {isAdmin ? "Admin" : "Account"}
+                      </p>
+                      <p className="text-sm font-bold text-white group-hover:text-brand-accent transition-colors max-w-[100px] truncate">
+                        {user.displayName || "Member"}
+                      </p>
+                    </div>
+                    
+                    <div className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${isProfileMenuOpen ? "border-brand-accent" : "border-white/20 group-hover:border-white/50"}`}>
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt="User"
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-brand-gray flex items-center justify-center text-sm font-bold text-white">
+                          {user.email?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+
+                  {/* DROPDOWN MENU */}
+                  {isProfileMenuOpen && (
+                    <div className="absolute right-0 mt-3 w-48 bg-brand-gray border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 animate-fade-in-up origin-top-right">
+                      <div className="px-4 py-2 border-b border-white/5">
+                        <p className="text-xs text-brand-muted truncate">Signed in as</p>
+                        <p className="text-sm font-bold text-white truncate">{user.email}</p>
+                      </div>
+                      
+                      {isAdmin ? (
+                        <Link 
+                          to="/admin" 
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          Admin Dashboard
+                        </Link>
+                      ) : (
+                        <Link 
+                          to="/dashboard" 
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          My Dashboard
+                        </Link>
+                      )}
+                      
+                      <button
+                        onClick={handleSignOut}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        Sign Out
+                      </button>
                     </div>
                   )}
-                  <button
-                    onClick={handleSignOut}
-                    className="text-xs font-bold text-brand-muted hover:text-red-400 transition-colors"
-                  >
-                    Sign Out
-                  </button>
                 </div>
               </div>
             ) : (
-              <Link to="/login" title="Member Login">
-                <button className="text-brand-muted hover:text-white p-2 rounded-full transition-colors hover:bg-white/5">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
+              <Link to="/login">
+                <button className="text-brand-muted hover:text-white font-bold text-sm px-4 py-2 transition-colors">
+                  Log In
                 </button>
               </Link>
             )}
 
-            <Link to="/connect">
-              <button className="bg-brand-accent text-brand-dark font-bold px-6 py-2.5 rounded-full hover:bg-brand-text hover:scale-105 transition-all shadow-[0_0_15px_rgba(204,255,0,0.3)]">
-                Join Us
-              </button>
-            </Link>
+            {!user && (
+              <Link to="/connect">
+                <button className="bg-brand-accent text-brand-dark font-bold px-6 py-2.5 rounded-full hover:bg-brand-text hover:scale-105 transition-all shadow-[0_0_15px_rgba(204,255,0,0.3)]">
+                  Join Us
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -162,19 +207,8 @@ const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="text-brand-muted hover:text-brand-text p-2 rounded-md"
             >
-              <span className="sr-only">Open menu</span>
-              <svg
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
@@ -203,29 +237,30 @@ const Navbar = () => {
             <div className="pt-4 mt-4 border-t border-white/5 space-y-3">
               {user ? (
                 <>
-                  {isAdmin ? (
-                    <Link
-                      to="/admin"
-                      className="block w-full text-center text-brand-accent font-bold py-3 rounded-xl border border-brand-accent/20"
-                    >
-                      Admin Dashboard
-                    </Link>
-                  ) : (
-                    // I kept text here for clarity on Mobile
+                  {!isAdmin && (
                     <Link
                       to="/journey"
                       onClick={() => setIsOpen(false)}
                       className="block w-full text-center text-white font-bold py-3 rounded-xl border border-white/20 bg-white/5 flex items-center justify-center gap-3"
                     >
-                      <img src={SproutIcon} alt="Growth" className="w-6 h-6" />
+                      <img src={SproutIcon} alt="Growth" className="w-5 h-5" />
                       My Journey
                     </Link>
                   )}
+                  
+                  <Link
+                    to={isAdmin ? "/admin" : "/dashboard"}
+                    onClick={() => setIsOpen(false)}
+                    className="block w-full text-center text-brand-accent font-bold py-3 rounded-xl border border-brand-accent/20"
+                  >
+                    {isAdmin ? "Admin Dashboard" : "Edit Profile"}
+                  </Link>
+
                   <button
                     onClick={handleSignOut}
                     className="block w-full text-center text-red-400 font-bold py-3 rounded-xl hover:bg-white/5"
                   >
-                    Sign Out ({user.email})
+                    Sign Out
                   </button>
                 </>
               ) : (
