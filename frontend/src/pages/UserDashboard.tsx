@@ -14,8 +14,9 @@ const UserDashboard = () => {
   const [bio, setBio] = useState("");
   const [phone, setPhone] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [birthday, setBirthday] = useState("");
 
-  // ✅ NEW: Success Modal State
+  // Success Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
@@ -26,7 +27,6 @@ const UserDashboard = () => {
       }
       setUser(currentUser);
 
-      // Fetch user data
       const docRef = doc(db, "users", currentUser.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
@@ -35,6 +35,7 @@ const UserDashboard = () => {
         setBio(data.bio || "");
         setPhone(data.phone || "");
         setPhotoUrl(data.photo_url || "");
+        setBirthday(data.birthday || "");
       }
       setLoading(false);
     });
@@ -52,8 +53,8 @@ const UserDashboard = () => {
         bio,
         phone,
         photo_url: photoUrl,
+        birthday,
       });
-      // ✅ Trigger the Success Modal
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -71,11 +72,10 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-brand-dark pt-32 pb-20 px-4 relative">
-      {/* ✅ SUCCESS MODAL */}
+      {/* SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-brand-gray border border-white/10 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl transform transition-all scale-100">
-            {/* Success Icon */}
             <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
               <svg
                 className="w-8 h-8 text-green-400"
@@ -91,122 +91,233 @@ const UserDashboard = () => {
                 />
               </svg>
             </div>
-
             <h3 className="text-2xl font-bold text-white mb-2 font-display">
-              Profile Updated!
+              Changes Saved!
             </h3>
             <p className="text-brand-muted mb-8">
-              Your details have been successfully saved to your dashboard.
+              Your profile has been updated successfully.
             </p>
-
             <button
               onClick={() => setShowSuccessModal(false)}
               className="w-full bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-all shadow-lg"
             >
-              Okay, got it!
+              Excellent
             </button>
           </div>
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-display font-bold text-white mb-2">
-          My Dashboard
-        </h1>
-        <p className="text-brand-muted mb-8">
-          Manage your personal information and settings.
-        </p>
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+          <div>
+            <h1 className="text-4xl font-display font-bold text-white mb-2">
+              My Profile
+            </h1>
+            <p className="text-brand-muted">
+              Manage your personal details and public presence.
+            </p>
+          </div>
+        </div>
 
-        <div className="bg-brand-gray/50 border border-white/5 rounded-3xl p-8 shadow-xl">
-          <form onSubmit={handleSave} className="space-y-6">
-            {/* Photo Preview */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-24 h-24 rounded-full border-4 border-white/10 overflow-hidden mb-4 bg-black relative group">
-                {photoUrl ? (
-                  <img
-                    src={photoUrl}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
-                    {name.charAt(0) || "U"}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* LEFT COLUMN: Profile Card (Preview) */}
+          <div className="lg:col-span-1">
+            <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl sticky top-32 text-center">
+              <div className="relative inline-block group mb-6">
+                <div className="w-32 h-32 rounded-full border-4 border-white/10 overflow-hidden bg-black mx-auto shadow-2xl">
+                  {photoUrl ? (
+                    <img
+                      src={photoUrl}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-4xl">
+                      {name.charAt(0) || "U"}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    Preview
+                  </span>
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-bold text-white mb-1">
+                {name || "Your Name"}
+              </h2>
+              <p className="text-brand-accent font-bold text-sm mb-6 uppercase tracking-wider">
+                Youth Member
+              </p>
+
+              {bio && (
+                <div className="bg-black/20 rounded-xl p-4 mb-6 text-left">
+                  <p className="text-sm text-brand-muted italic leading-relaxed">
+                    "{bio}"
+                  </p>
+                </div>
+              )}
+
+              <div className="border-t border-white/5 pt-6 grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-brand-muted uppercase font-bold">
+                    Joined
+                  </p>
+                  <p className="text-white font-bold">2024</p>
+                </div>
+                <div>
+                  <p className="text-xs text-brand-muted uppercase font-bold">
+                    Status
+                  </p>
+                  <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <p className="text-white font-bold text-sm">Active</p>
                   </div>
-                )}
-              </div>
-              <p className="text-xs text-brand-muted">Profile Preview</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div className="col-span-2 md:col-span-1">
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors"
-                  placeholder="Your Name"
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="col-span-2 md:col-span-1">
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors"
-                  placeholder="+63 9..."
-                />
-              </div>
-
-              {/* Photo URL */}
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
-                  Photo URL
-                </label>
-                <input
-                  type="text"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors"
-                  placeholder="https://example.com/my-photo.jpg"
-                />
-                <p className="text-[10px] text-brand-muted mt-2">
-                  Paste a link to your image (e.g. from Facebook, Imgur, or
-                  Google).
-                </p>
-              </div>
-
-              {/* Bio */}
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
-                  Bio / Motto
-                </label>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent h-32 resize-none transition-colors"
-                  placeholder="Share a favorite verse or a brief bio..."
-                />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="pt-4 border-t border-white/5 flex justify-end">
-              <button
-                type="submit"
-                className="bg-brand-accent text-brand-dark font-bold px-8 py-3 rounded-xl hover:bg-white hover:scale-105 transition-all shadow-lg"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
+          {/* RIGHT COLUMN: Settings Form */}
+          <div className="lg:col-span-2">
+            <form onSubmit={handleSave} className="space-y-8">
+              {/* SECTION 1: Personal Info */}
+              <div className="bg-brand-gray/50 border border-white/5 rounded-3xl p-8 shadow-xl">
+                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-sm">
+                    1
+                  </span>
+                  Personal Information
+                </h3>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:bg-black/40 transition-all"
+                      placeholder="e.g. Juan Dela Cruz"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:bg-black/40 transition-all"
+                      placeholder="+63 9..."
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
+                      Bio / Life Motto
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:bg-black/40 transition-all h-24 resize-none"
+                      placeholder="Share a favorite verse or a brief intro..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: Celebration (Birthday) */}
+              <div className="bg-brand-gray/50 border border-white/5 rounded-3xl p-8 shadow-xl">
+                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-sm">
+                    2
+                  </span>
+                  Celebration
+                </h3>
+
+                <div className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 border border-pink-500/20 rounded-2xl p-6 relative overflow-hidden flex flex-col sm:flex-row items-center gap-6">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+
+                  <div className="w-16 h-16 bg-brand-dark rounded-2xl flex items-center justify-center text-3xl shadow-lg border border-white/5 shrink-0">
+                    🎂
+                  </div>
+
+                  <div className="flex-1 w-full text-center sm:text-left">
+                    <h4 className="text-lg font-bold text-white mb-1">
+                      When is your birthday?
+                    </h4>
+                    <p className="text-xs text-brand-muted mb-4">
+                      We want to celebrate God's goodness in your life!
+                    </p>
+                    <input
+                      type="date"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      className="w-full sm:w-auto bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500/50 transition-all cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: Profile Image */}
+              <div className="bg-brand-gray/50 border border-white/5 rounded-3xl p-8 shadow-xl">
+                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-sm">
+                    3
+                  </span>
+                  Profile Image
+                </h3>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-muted uppercase mb-2">
+                    Image URL
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={photoUrl}
+                        onChange={(e) => setPhotoUrl(e.target.value)}
+                        className="w-full bg-black/20 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-brand-accent focus:bg-black/40 transition-all"
+                        placeholder="https://..."
+                      />
+                      <svg
+                        className="w-5 h-5 text-brand-muted absolute left-3 top-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-brand-muted mt-2 ml-1">
+                    Tip: Use a direct link from Google Photos, Imgur, or social
+                    media.
+                  </p>
+                </div>
+              </div>
+
+              {/* ACTION BUTTON */}
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  className="bg-brand-accent text-brand-dark font-bold text-lg px-10 py-4 rounded-full hover:bg-white hover:scale-105 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

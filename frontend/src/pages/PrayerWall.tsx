@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth"; // ✅ Import Auth Listener
+import { auth, db, isFirebaseConfigured } from "../lib/firebase";
 
 const PrayerWall = () => {
   const [activeTab, setActiveTab] = useState<"requests" | "praise">("requests");
+  const [user, setUser] = useState<any>(null); // ✅ Store User State
 
   // Prayer Request Form
   const [requestForm, setRequestForm] = useState({ request: "" });
@@ -15,6 +17,14 @@ const PrayerWall = () => {
   const [praiseSubmitting, setPraiseSubmitting] = useState(false);
   const [praiseMessage, setPraiseMessage] = useState("");
 
+  // ✅ Check for logged-in user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleRequestSubmit = async () => {
     if (!db || !requestForm.request.trim()) return;
     setRequestSubmitting(true);
@@ -24,6 +34,9 @@ const PrayerWall = () => {
         request: requestForm.request.trim(),
         created_at: serverTimestamp(),
         commit_count: 0,
+        // ✅ Save User ID (Critical for Personal Journal)
+        userId: user ? user.uid : null, 
+        isAnswered: false 
       });
       setRequestForm({ request: "" });
       setRequestMessage("Request sent to our prayer team! 🙏");
@@ -43,6 +56,8 @@ const PrayerWall = () => {
         author: praiseForm.author.trim(),
         testimony: praiseForm.testimony.trim(),
         created_at: serverTimestamp(),
+        // ✅ Save User ID (Optional, but good for tracking praises too)
+        userId: user ? user.uid : null,
       });
       setPraiseForm({ author: "", testimony: "" });
       setPraiseMessage("Praise report submitted! 🙌");
