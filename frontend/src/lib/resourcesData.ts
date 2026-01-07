@@ -8,9 +8,11 @@ export const resourcesData = [
     category: "Bible Stories",
     scripture: "Luke 15:11-32",
     image: "https://michaelkelley.co/wp-content/uploads/2019/06/Prodigal.jpg",
-    summary: "He wanted freedom, took the cash, and ghosted his family. But when he hit rock bottom, he found something he didn't expect: a party.",
+    summary:
+      "He wanted freedom, took the cash, and ghosted his family. But when he hit rock bottom, he found something he didn't expect: a party.",
     readTime: "6 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Luke+15%3A11-32&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Luke+15%3A11-32&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">The Vibe: FOMO & Freedom</h3>
       <p>We've all been there. You feel restricted, watched, and bored. You look at the world and think, "Everyone else is having fun except me." That’s exactly where the younger son was. He didn't just want to leave; he wanted his inheritance <em>now</em>. In that culture, that was basically saying, "Dad, I wish you were dead so I could have your money."</p>
@@ -29,10 +31,13 @@ export const resourcesData = [
     title: "When Life Hits Different (Job)",
     category: "Bible Stories",
     scripture: "Book of Job",
-    image: "https://cms-imgp.jw-cdn.org/img/p/502019375/univ/wpub/502019375_univ_lsr_lg.jpg",
-    summary: "He lost his cash, his kids, and his health in one weekend. How do you trust God when your life literally falls apart?",
+    image:
+      "https://cms-imgp.jw-cdn.org/img/p/502019375/univ/wpub/502019375_univ_lsr_lg.jpg",
+    summary:
+      "He lost his cash, his kids, and his health in one weekend. How do you trust God when your life literally falls apart?",
     readTime: "8 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Job+1&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Job+1&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">The Worst Week Ever</h3>
       <p>Imagine checking your phone and seeing notification after notification: Bank account drained. House burned down. Family gone. That was Job's Tuesday. He went from being the "Greatest of All Time" in the East to sitting in a pile of ashes, scraping his sores with broken pottery.</p>
@@ -51,10 +56,13 @@ export const resourcesData = [
     title: "The Ultimate Glow Up (Joseph)",
     category: "Bible Stories",
     scripture: "Genesis 37-50",
-    image: "https://media.swncdn.com/cms/BST/49183-Joseph_Sold_by_His_Brothers.800w.tn.jpg",
-    summary: "Hated by his brothers, sold into slavery, and thrown in prison for a crime he didn't commit. This is the story of grit, gifts, and glory.",
+    image:
+      "https://media.swncdn.com/cms/BST/49183-Joseph_Sold_by_His_Brothers.800w.tn.jpg",
+    summary:
+      "Hated by his brothers, sold into slavery, and thrown in prison for a crime he didn't commit. This is the story of grit, gifts, and glory.",
     readTime: "12 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Genesis+37&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Genesis+37&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Haters Gonna Hate</h3>
       <p>Joseph was the favorite, and he knew it. He had the coat, the dreams, and the attitude. His brothers hated him for it—so much that they threw him in a pit and sold him to strangers. Talk about family drama.</p>
@@ -73,10 +81,13 @@ export const resourcesData = [
     title: "Slaying Your Giants (David)",
     category: "Bible Stories",
     scripture: "1 Samuel 17",
-    image: "https://letterpile.com/.image/w_3840,q_auto:good,c_limit/MTc1Mjc3MzE5NTM0MDI4MTU4/the-story-of-david-goliath.jpg",
-    summary: "He was too young, too small, and untrained. But while the army was trembling, a shepherd boy stepped up to the line.",
+    image:
+      "https://letterpile.com/.image/w_3840,q_auto:good,c_limit/MTc1Mjc3MzE5NTM0MDI4MTU4/the-story-of-david-goliath.jpg",
+    summary:
+      "He was too young, too small, and untrained. But while the army was trembling, a shepherd boy stepped up to the line.",
     readTime: "6 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=1+Samuel+17&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=1+Samuel+17&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Underdog Energy</h3>
       <p>Goliath was a tank. He had the armor, the height, and the trash talk. The entire army of Israel was shaking in their boots. Then comes David, delivering cheese to his brothers. He hears the insults and asks, "Who is this uncircumcised Philistine that he should defy the armies of the living God?"</p>
@@ -95,10 +106,13 @@ export const resourcesData = [
     title: "DMing God (How to Pray)",
     category: "Study Guides",
     scripture: "Matthew 6",
-    image: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800",
-    summary: "Prayer isn't about fancy words or thou/art/hast. It's a DM to your Creator. Here is how to keep the conversation real.",
+    image:
+      "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800",
+    summary:
+      "Prayer isn't about fancy words or thou/art/hast. It's a DM to your Creator. Here is how to keep the conversation real.",
     readTime: "5 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Matthew+6&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Matthew+6&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Keep It Real</h3>
       <p>Jesus warned against "babbling like pagans." You don't need a thesaurus to talk to God. He knows what you need before you ask. Prayer is relational, not transactional. It's not an ATM code; it's a FaceTime call.</p>
@@ -120,10 +134,13 @@ export const resourcesData = [
     title: "The Vibe Check (Fruits of the Spirit)",
     category: "Devotionals",
     scripture: "Galatians 5:22-23",
-    image: "https://i.pinimg.com/1200x/ef/4c/8d/ef4c8de6fca4e158ed7315a2cba5a3d9.jpg",
-    summary: "How do people know you're a Christian? It's not your bio or your playlist. It's your fruit. Let's check your spiritual vitals.",
+    image:
+      "https://i.pinimg.com/1200x/ef/4c/8d/ef4c8de6fca4e158ed7315a2cba5a3d9.jpg",
+    summary:
+      "How do people know you're a Christian? It's not your bio or your playlist. It's your fruit. Let's check your spiritual vitals.",
     readTime: "7 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Galatians+5%3A22-23&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Galatians+5%3A22-23&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Love, Joy, Peace... Really?</h3>
       <p>It's easy to be a Christian at a worship night. It's hard to be a Christian in traffic, or when your teacher is unfair, or when your parents just don't get it. That is where the Fruit of the Spirit comes in.</p>
@@ -142,10 +159,13 @@ export const resourcesData = [
     title: "The Original Glitch (Adam & Eve)",
     category: "Bible Stories",
     scripture: "Genesis 3",
-    image: "https://i.pinimg.com/736x/d4/6e/b3/d46eb30dd299cd3f0803f2a50987259e.jpg",
-    summary: "They had one job. One rule. And a snake who claimed he knew better. This is the moment everything broke.",
+    image:
+      "https://i.pinimg.com/736x/d4/6e/b3/d46eb30dd299cd3f0803f2a50987259e.jpg",
+    summary:
+      "They had one job. One rule. And a snake who claimed he knew better. This is the moment everything broke.",
     readTime: "5 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Genesis+3&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Genesis+3&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">You Had One Job</h3>
       <p>Imagine living in a world with no stress, no shame, and perfect Wi-Fi (metaphorically). That was Eden. God gave Adam and Eve everything, with just one restriction: Don't eat from that one tree. It wasn't about the fruit; it was about trust.</p>
@@ -164,10 +184,13 @@ export const resourcesData = [
     title: "Ghosting God (Jonah)",
     category: "Bible Stories",
     scripture: "Book of Jonah",
-    image: "https://i.pinimg.com/736x/2f/88/fe/2f88fe2973dc9c7882437efaa024e2eb.jpg",
-    summary: "God gave him a mission. He bought a ticket to the opposite side of the world. But you can't outrun your calling.",
+    image:
+      "https://i.pinimg.com/736x/2f/88/fe/2f88fe2973dc9c7882437efaa024e2eb.jpg",
+    summary:
+      "God gave him a mission. He bought a ticket to the opposite side of the world. But you can't outrun your calling.",
     readTime: "7 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Jonah+1&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Jonah+1&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Running Away</h3>
       <p>God told Jonah: "Go to Nineveh." Jonah said: "Nope," and hopped on a boat going the other way. He hated the people of Nineveh and didn't think they deserved a chance. He thought he could just ghost God and do his own thing.</p>
@@ -186,10 +209,13 @@ export const resourcesData = [
     title: "Trust the Process (Abraham)",
     category: "Bible Stories",
     scripture: "Genesis 12-22",
-    image: "https://i.pinimg.com/736x/5e/51/f3/5e51f34112ec4b9343df29add945ba7f.jpg",
-    summary: "Imagine moving without a GPS destination. Abraham left everything on a promise that took 25 years to fulfill.",
+    image:
+      "https://i.pinimg.com/736x/5e/51/f3/5e51f34112ec4b9343df29add945ba7f.jpg",
+    summary:
+      "Imagine moving without a GPS destination. Abraham left everything on a promise that took 25 years to fulfill.",
     readTime: "8 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Genesis+12&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Genesis+12&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Leaving the Comfort Zone</h3>
       <p>God told Abraham (then Abram) to leave his home, his family, and his comfort for a land "I will show you." No maps. No Zillow listings. Just "Go." Abraham packed his bags and moved. That is faith.</p>
@@ -208,10 +234,13 @@ export const resourcesData = [
     title: "Here I Am, Send Me (Isaiah)",
     category: "Bible Stories",
     scripture: "Isaiah 6",
-    image: "https://i.pinimg.com/736x/ee/ff/38/eeff3896c318b0a147082a294f164f26.jpg",
-    summary: "While everyone else was comfortable, Isaiah saw a vision that changed everything. He volunteered for the hardest job in the world.",
+    image:
+      "https://i.pinimg.com/736x/ee/ff/38/eeff3896c318b0a147082a294f164f26.jpg",
+    summary:
+      "While everyone else was comfortable, Isaiah saw a vision that changed everything. He volunteered for the hardest job in the world.",
     readTime: "6 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Isaiah+6&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Isaiah+6&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">The Throne Room</h3>
       <p>King Uzziah died, and the nation was in crisis. In that moment of uncertainty, Isaiah saw the real King sitting on the throne. Angels were shouting "Holy, Holy, Holy," and the ground shook. Isaiah realized one thing: "I am messed up."</p>
@@ -230,10 +259,13 @@ export const resourcesData = [
     title: "Too Young? Nah. (Jeremiah)",
     category: "Bible Stories",
     scripture: "Jeremiah 1",
-    image: "https://i.pinimg.com/736x/d7/eb/0f/d7eb0f125ea184bd4144cf6402e34518.jpg",
-    summary: "He tried to use the 'I'm just a kid' excuse. God wasn't having it. The story of battling Imposter Syndrome.",
+    image:
+      "https://i.pinimg.com/736x/d7/eb/0f/d7eb0f125ea184bd4144cf6402e34518.jpg",
+    summary:
+      "He tried to use the 'I'm just a kid' excuse. God wasn't having it. The story of battling Imposter Syndrome.",
     readTime: "6 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Jeremiah+1&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Jeremiah+1&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">Imposter Syndrome</h3>
       <p>God called Jeremiah to be a prophet to the nations. Huge job. Jeremiah's response? "Ah, Lord God! I cannot speak, for I am a youth." Translation: "I'm too young, I'm awkward, and nobody will listen to me."</p>
@@ -252,10 +284,13 @@ export const resourcesData = [
     title: "Built Different (Daniel)",
     category: "Bible Stories",
     scripture: "Daniel 1-6",
-    image: "https://i.pinimg.com/736x/1e/b3/c8/1eb3c83fe41fce2191c15f5193e6e7f7.jpg",
-    summary: "Kidnapped, renamed, and pressured to fit in. But Daniel refused to cancel his convictions, even if it meant a den of lions.",
+    image:
+      "https://i.pinimg.com/736x/1e/b3/c8/1eb3c83fe41fce2191c15f5193e6e7f7.jpg",
+    summary:
+      "Kidnapped, renamed, and pressured to fit in. But Daniel refused to cancel his convictions, even if it meant a den of lions.",
     readTime: "9 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=Daniel+1&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=Daniel+1&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">The Culture War</h3>
       <p>Daniel was a teenager when he was taken prisoner to Babylon. The empire tried to erase his identity. They changed his name and tried to force him to eat their food (which violated God's law). It would have been easy to just blend in.</p>
@@ -274,10 +309,13 @@ export const resourcesData = [
     title: "The 1v450 Clutch (Elijah)",
     category: "Bible Stories",
     scripture: "1 Kings 18",
-    image: "https://i.pinimg.com/736x/00/2c/29/002c29b7f6f3dae12531617a72b67d5d.jpg",
-    summary: "One prophet of God vs. 450 prophets of Baal. The ultimate showdown on Mount Carmel involving fire, water, and a lot of confidence.",
+    image:
+      "https://i.pinimg.com/736x/00/2c/29/002c29b7f6f3dae12531617a72b67d5d.jpg",
+    summary:
+      "One prophet of God vs. 450 prophets of Baal. The ultimate showdown on Mount Carmel involving fire, water, and a lot of confidence.",
     readTime: "8 min read",
-    externalLink: "https://www.biblegateway.com/passage/?search=1+Kings+18&version=NIV",
+    externalLink:
+      "https://www.biblegateway.com/passage/?search=1+Kings+18&version=NIV",
     content: `
       <h3 class="text-brand-accent text-xl font-bold mb-2">The Showdown</h3>
       <p>Israel was worshipping a fake god named Baal. Elijah was tired of it. He challenged 450 of Baal's prophets to a duel on Mount Carmel. "You build an altar, I'll build an altar. The god who answers by fire is the real God."</p>

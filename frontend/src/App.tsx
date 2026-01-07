@@ -34,6 +34,7 @@ import PrayerManager from "./pages/admin/PrayerManager";
 import UserDashboard from "./pages/UserDashboard";
 import LogoIcon from "./assets/logo-icon.png";
 import ScannerPage from "./pages/Scanner";
+import ActivityLog from "./pages/admin/ActivityLog";
 
 // --- FLOATING MESSENGER COMPONENT (FIXED) ---
 const FloatingMessenger = () => (
@@ -216,6 +217,18 @@ function App() {
             element={
               <ProtectedRoute>
                 <ScannerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 8. Activity Logs (✅ NEW ROUTE) */}
+          <Route
+            path="/admin/logs"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <ActivityLog />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />

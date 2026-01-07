@@ -50,22 +50,47 @@ const Login = () => {
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
 
+    // 🚨 IMPORTANT: REPLACE THIS WITH YOUR EXACT ADMIN EMAIL
+    const ADMIN_EMAIL = "your-email@gmail.com";
+
     if (userDoc.exists()) {
-      const role = userDoc.data().role;
-      if (role === "admin") {
+      const userData = userDoc.data();
+
+      // ✅ FIX 1: Force Admin Role if email matches (even if DB says "youth")
+      if (user.email === ADMIN_EMAIL && userData.role !== "admin") {
+        await setDoc(
+          userDocRef,
+          { ...userData, role: "admin" },
+          { merge: true }
+        );
+        navigate("/admin");
+        return;
+      }
+
+      // Standard Routing
+      if (userData.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/");
       }
     } else {
+      // ✅ FIX 2: When creating a NEW user, check if it's the admin email
+      const isAdmin = user.email === ADMIN_EMAIL;
+
       await setDoc(userDocRef, {
         email: user.email,
-        role: "youth",
+        role: isAdmin ? "admin" : "youth", // Auto-assign admin if email matches
         created_at: serverTimestamp(),
         name: user.displayName || name || "Youth Member",
         photo_url: user.photoURL || "",
       });
-      navigate("/");
+
+      // Redirect based on the role we just assigned
+      if (isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     }
   };
 

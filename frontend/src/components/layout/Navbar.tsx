@@ -33,7 +33,10 @@ const Navbar = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
         setIsProfileMenuOpen(false);
       }
     };
@@ -98,16 +101,15 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                
                 {/* 1. SPROUT ICON (Stuck on Navbar) - Links to My Journey */}
                 {!isAdmin && (
-                  <Link 
-                    to="/journey" 
+                  <Link
+                    to="/journey"
                     title="My Journey"
                     className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all group ${
-                      isActive("/journey") 
-                      ? "bg-brand-accent/20 border-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.4)]" 
-                      : "border-white/20 hover:border-brand-accent hover:bg-white/5"
+                      isActive("/journey")
+                        ? "bg-brand-accent/20 border-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.4)]"
+                        : "border-white/20 hover:border-brand-accent hover:bg-white/5"
                     }`}
                   >
                     <img
@@ -119,8 +121,11 @@ const Navbar = () => {
                 )}
 
                 {/* 2. PROFILE AVATAR & DROPDOWN */}
-                <div className="relative pl-4 border-l border-white/10" ref={profileMenuRef}>
-                  <button 
+                <div
+                  className="relative pl-4 border-l border-white/10"
+                  ref={profileMenuRef}
+                >
+                  <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     className="flex items-center gap-3 group focus:outline-none"
                   >
@@ -132,8 +137,14 @@ const Navbar = () => {
                         {user.displayName || "Member"}
                       </p>
                     </div>
-                    
-                    <div className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${isProfileMenuOpen ? "border-brand-accent" : "border-white/20 group-hover:border-white/50"}`}>
+
+                    <div
+                      className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${
+                        isProfileMenuOpen
+                          ? "border-brand-accent"
+                          : "border-white/20 group-hover:border-white/50"
+                      }`}
+                    >
                       {user.photoURL ? (
                         <img
                           src={user.photoURL}
@@ -152,28 +163,32 @@ const Navbar = () => {
                   {isProfileMenuOpen && (
                     <div className="absolute right-0 mt-3 w-48 bg-brand-gray border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 animate-fade-in-up origin-top-right">
                       <div className="px-4 py-2 border-b border-white/5">
-                        <p className="text-xs text-brand-muted truncate">Signed in as</p>
-                        <p className="text-sm font-bold text-white truncate">{user.email}</p>
+                        <p className="text-xs text-brand-muted truncate">
+                          Signed in as
+                        </p>
+                        <p className="text-sm font-bold text-white truncate">
+                          {user.email}
+                        </p>
                       </div>
-                      
+
                       {isAdmin ? (
-                        <Link 
-                          to="/admin" 
+                        <Link
+                          to="/admin"
                           className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
                           Admin Dashboard
                         </Link>
                       ) : (
-                        <Link 
-                          to="/dashboard" 
+                        <Link
+                          to="/admin"
                           className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
                           My Dashboard
                         </Link>
                       )}
-                      
+
                       <button
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
@@ -207,8 +222,18 @@ const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="text-brand-muted hover:text-brand-text p-2 rounded-md"
             >
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="h-8 w-8"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
@@ -247,7 +272,7 @@ const Navbar = () => {
                       My Journey
                     </Link>
                   )}
-                  
+
                   <Link
                     to={isAdmin ? "/admin" : "/dashboard"}
                     onClick={() => setIsOpen(false)}

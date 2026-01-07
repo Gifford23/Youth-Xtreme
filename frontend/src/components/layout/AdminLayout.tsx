@@ -22,10 +22,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/", label: "Home", Icon: HomeIcon },
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
-    { to: "/admin/media", label: "Media Feed", Icon: CameraIcon }, // ✅ This works now!
+    { to: "/admin/media", label: "Media Feed", Icon: CameraIcon },
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
     { to: "/admin/rsvps", label: "Registrations", Icon: TicketIcon },
     { to: "/admin/prayer", label: "Prayer Wall", Icon: HandsIcon },
+    { to: "/admin/logs", label: "Activity Logs", Icon: ActivityIcon },
   ];
 
   // ✅ LOGOUT FUNCTION
@@ -206,7 +207,6 @@ const UsersIcon: NavIcon = (props) => (
   </svg>
 );
 
-// ✅ NEW: Camera Icon for Media Feed
 const CameraIcon: NavIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
@@ -358,6 +358,23 @@ const HandsIcon: NavIcon = (props) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
+    />
+  </svg>
+);
+
+// ✅ NEW ACTIVITY ICON
+const ActivityIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
     />
   </svg>
 );

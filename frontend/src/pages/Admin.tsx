@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Link } from "react-router-dom";
+import { logActivity } from "../utils/logger"; // ✅ Import Logger
 
 // Types
 interface AppEvent {
@@ -32,6 +33,10 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingList, setLoadingList] = useState(false);
 
+  // --- STATE FOR ACTIVITY LOGS ---
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
   // --- STATE FOR CREATE EVENT FORM ---
   const [eventForm, setEventForm] = useState({
     title: "",
@@ -47,16 +52,41 @@ const Admin = () => {
   useEffect(() => {
     if (activeTab === "all events") {
       setLoadingList(true);
-      const q = query(collection(db, "events"), orderBy("event_date", "desc"));
-      const unsub = onSnapshot(q, (snap) => {
-        const data = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as AppEvent[];
-        setEventsList(data);
-        setLoadingList(false);
-      });
-      return unsub;
+      if (db) {
+        const q = query(
+          collection(db, "events"),
+          orderBy("event_date", "desc")
+        );
+        const unsub = onSnapshot(q, (snap) => {
+          const data = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })) as AppEvent[];
+          setEventsList(data);
+          setLoadingList(false);
+        });
+        return unsub;
+      }
+    }
+
+    // 2. Fetch Activity Logs
+    if (activeTab === "activity logs") {
+      setLoadingLogs(true);
+      if (db) {
+        const q = query(
+          collection(db, "activity_logs"),
+          orderBy("timestamp", "desc")
+        );
+        const unsub = onSnapshot(q, (snap) => {
+          const data = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
+          setActivityLogs(data);
+          setLoadingLogs(false);
+        });
+        return unsub;
+      }
     }
   }, [activeTab]);
 
@@ -67,7 +97,7 @@ const Admin = () => {
     try {
       const eventDateTime = new Date(`${eventForm.date}T${eventForm.time}`);
 
-      await addDoc(collection(db, "events"), {
+      await addDoc(collection(db!, "events"), {
         title: eventForm.title,
         event_date: eventDateTime,
         location: eventForm.location,
@@ -76,6 +106,13 @@ const Admin = () => {
         description: eventForm.description,
         created_at: serverTimestamp(),
       });
+
+      // ✅ LOG ACTIVITY
+      await logActivity(
+        "Created Event",
+        `Created event: ${eventForm.title} at ${eventForm.location}`
+      );
+
       alert("✅ Event Created Successfully!");
       setEventForm({
         title: "",
@@ -101,14 +138,16 @@ const Admin = () => {
       )
     ) {
       try {
-        await deleteDoc(doc(db, "events", id));
+        await deleteDoc(doc(db!, "events", id));
+        // ✅ LOG ACTIVITY
+        await logActivity("Deleted Event", `Deleted event ID: ${id}`);
       } catch (error) {
         alert("Error deleting event");
       }
     }
   };
 
-  // 4. ✅ NEW: Handle Print Attendance Sheet
+  // 4. Handle Print Attendance Sheet
   const handlePrintSheet = (event: AppEvent) => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return alert("Please allow popups to print");
@@ -197,7 +236,6 @@ const Admin = () => {
     printWindow.document.write(html);
     printWindow.document.close();
     printWindow.focus();
-    // Small timeout ensures styles are loaded before printing
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
@@ -223,7 +261,7 @@ const Admin = () => {
         </p>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions (RESTORED TO 3 COLUMNS) */}
       <div className="grid md:grid-cols-3 gap-4 mb-12">
         <Link
           to="/scanner"
@@ -308,22 +346,24 @@ const Admin = () => {
 
       {/* Main Tab Navigation */}
       <div className="flex gap-6 border-b border-white/10 pb-4 mb-8 overflow-x-auto">
-        {["new event", "all events", "photos", "content"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`text-sm font-bold uppercase tracking-wider transition-all relative whitespace-nowrap ${
-              activeTab === tab
-                ? "text-brand-accent"
-                : "text-brand-muted hover:text-white"
-            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <span className="absolute -bottom-4 left-0 w-full h-0.5 bg-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.5)]"></span>
-            )}
-          </button>
-        ))}
+        {["new event", "all events", "activity logs", "photos", "content"].map(
+          (tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`text-sm font-bold uppercase tracking-wider transition-all relative whitespace-nowrap ${
+                activeTab === tab
+                  ? "text-brand-accent"
+                  : "text-brand-muted hover:text-white"
+              }`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <span className="absolute -bottom-4 left-0 w-full h-0.5 bg-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.5)]"></span>
+              )}
+            </button>
+          )
+        )}
       </div>
 
       {/* --- TAB 1: NEW EVENT FORM --- */}
@@ -551,12 +591,12 @@ const Admin = () => {
                     </div>
                   </div>
                 </div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-800 rounded-b-xl"></div>
               </div>
-              <p className="text-center text-xs text-brand-muted mt-4">
-                This is how users will see it.
-              </p>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-800 rounded-b-xl"></div>
             </div>
+            <p className="text-center text-xs text-brand-muted mt-4">
+              This is how users will see it.
+            </p>
           </div>
         </div>
       )}
@@ -675,7 +715,7 @@ const Admin = () => {
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {/* ✅ NEW: Print Button */}
+                            {/* Print Button */}
                             <button
                               onClick={() => handlePrintSheet(event)}
                               className="text-gray-500 hover:text-brand-accent transition-colors p-2 rounded-lg hover:bg-white/5"
@@ -725,6 +765,50 @@ const Admin = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* --- ACTIVITY LOGS TAB --- */}
+      {activeTab === "activity logs" && (
+        <div className="bg-brand-gray/50 rounded-2xl border border-white/5 p-8">
+          <h2 className="text-2xl font-bold text-white mb-6">Activity Logs</h2>
+          {loadingLogs ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-brand-accent"></div>
+              <p className="mt-4 text-brand-muted">Loading activity logs...</p>
+            </div>
+          ) : activityLogs.length === 0 ? (
+            <div className="text-center py-12 text-brand-muted">
+              <p>No activity logs found.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activityLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="bg-brand-dark/50 rounded-xl p-4 border border-white/10"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white text-lg">
+                        {log.action}
+                      </h3>
+                      <p className="text-brand-muted text-sm mt-1">
+                        {log.details}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-brand-accent text-xs">
+                        {log.timestamp?.toDate?.()
+                          ? log.timestamp.toDate().toLocaleString()
+                          : "Unknown time"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
