@@ -181,7 +181,7 @@ const Navbar = () => {
                         </Link>
                       ) : (
                         <Link
-                          to="/admin"
+                          to="/dashboard" /* ✅ FIXED: Points to /dashboard for members */
                           className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >

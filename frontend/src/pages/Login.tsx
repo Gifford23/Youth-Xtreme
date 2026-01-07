@@ -51,7 +51,7 @@ const Login = () => {
     const userDoc = await getDoc(userDocRef);
 
     // 🚨 IMPORTANT: REPLACE THIS WITH YOUR EXACT ADMIN EMAIL
-    const ADMIN_EMAIL = "your-email@gmail.com";
+    const ADMIN_EMAIL = "admin@youthxtreme.com";
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
