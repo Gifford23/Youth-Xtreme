@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 
 const UserDashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -16,8 +17,12 @@ const UserDashboard = () => {
   const [photoUrl, setPhotoUrl] = useState("");
   const [birthday, setBirthday] = useState("");
 
-  // Success Modal State
+  // ✅ NEW: Volunteer State
+  const [isVolunteer, setIsVolunteer] = useState(false);
+
+  // Modal States
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -36,6 +41,9 @@ const UserDashboard = () => {
         setPhone(data.phone || "");
         setPhotoUrl(data.photo_url || "");
         setBirthday(data.birthday || "");
+
+        // ✅ Load Volunteer Status
+        setIsVolunteer(data.isVolunteer === true);
       }
       setLoading(false);
     });
@@ -72,6 +80,48 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-brand-dark pt-32 pb-20 px-4 relative">
+      {/* QR CODE MODAL (THE PASS) */}
+      {showQrModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-dark font-bold px-6 py-2 rounded-full shadow-lg border-2 border-brand-dark uppercase tracking-widest text-sm">
+              Official Pass
+            </div>
+
+            <h3 className="text-2xl font-display font-bold text-black mb-1 uppercase">
+              {name || "Youth Member"}
+            </h3>
+            <p className="text-gray-500 text-sm mb-6">{user.email}</p>
+
+            <div className="bg-white p-2 rounded-xl border-4 border-black/10 inline-block mb-6">
+              <QRCodeSVG
+                value={user.email || ""}
+                size={200}
+                fgColor="#000000"
+                bgColor="#ffffff"
+              />
+            </div>
+
+            <p className="text-xs text-gray-400 mb-6">
+              Show this code at the entrance to check in.
+            </p>
+
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="w-full bg-black text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-all"
+            >
+              Close Pass
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
@@ -94,12 +144,9 @@ const UserDashboard = () => {
             <h3 className="text-2xl font-bold text-white mb-2 font-display">
               Changes Saved!
             </h3>
-            <p className="text-brand-muted mb-8">
-              Your profile has been updated successfully.
-            </p>
             <button
               onClick={() => setShowSuccessModal(false)}
-              className="w-full bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-all shadow-lg"
+              className="w-full bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white mt-4"
             >
               Excellent
             </button>
@@ -117,14 +164,87 @@ const UserDashboard = () => {
               Manage your personal details and public presence.
             </p>
           </div>
+
+          <div className="flex flex-wrap gap-3">
+            {/* 1. USHER BUTTON (Direct Link to Scanner) */}
+            <Link
+              to="/scanner"
+              className="flex items-center gap-2 bg-brand-accent hover:bg-white border border-transparent text-brand-dark font-bold px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="hidden sm:inline">Scan Tickets</span>
+              <span className="sm:hidden">Scan</span>
+            </Link>
+
+            {/* 2. MEMBER BUTTON (Show Pass) */}
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                />
+              </svg>
+              Show Pass
+            </button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN: Profile Card (Preview) */}
           <div className="lg:col-span-1">
-            <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl sticky top-32 text-center">
-              <div className="relative inline-block group mb-6">
-                <div className="w-32 h-32 rounded-full border-4 border-white/10 overflow-hidden bg-black mx-auto shadow-2xl">
+            <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl sticky top-32 text-center relative overflow-hidden">
+              {/* ✅ NEW: VOLUNTEER BADGE (CONDITIONAL) */}
+              {isVolunteer && (
+                <div className="absolute top-0 right-0 p-4 animate-fade-in-down">
+                  <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg shadow-yellow-500/20 flex items-center gap-1">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    Official Volunteer
+                  </div>
+                </div>
+              )}
+
+              <div className="relative inline-block group mb-6 mt-4">
+                <div
+                  className={`w-32 h-32 rounded-full border-4 overflow-hidden bg-black mx-auto shadow-2xl transition-all ${
+                    isVolunteer
+                      ? "border-brand-accent shadow-[0_0_30px_rgba(204,255,0,0.3)]"
+                      : "border-white/10"
+                  }`}
+                >
                   {photoUrl ? (
                     <img
                       src={photoUrl}
@@ -137,18 +257,19 @@ const UserDashboard = () => {
                     </div>
                   )}
                 </div>
-                <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    Preview
-                  </span>
-                </div>
               </div>
 
               <h2 className="text-2xl font-bold text-white mb-1">
                 {name || "Your Name"}
               </h2>
-              <p className="text-brand-accent font-bold text-sm mb-6 uppercase tracking-wider">
-                Youth Member
+
+              {/* ✅ UPDATED: Change Text based on Role */}
+              <p
+                className={`font-bold text-sm mb-6 uppercase tracking-wider ${
+                  isVolunteer ? "text-brand-accent" : "text-brand-muted"
+                }`}
+              >
+                {isVolunteer ? "Xtreme Team Volunteer" : "Youth Member"}
               </p>
 
               {bio && (
@@ -230,7 +351,7 @@ const UserDashboard = () => {
                 </div>
               </div>
 
-              {/* SECTION 2: Celebration (Birthday) */}
+              {/* SECTION 2: Celebration */}
               <div className="bg-brand-gray/50 border border-white/5 rounded-3xl p-8 shadow-xl">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
                   <span className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-sm">

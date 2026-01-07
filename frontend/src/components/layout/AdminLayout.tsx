@@ -18,6 +18,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
 
   const navItems = [
+    { to: "/admin", label: "Dashboard", Icon: SettingsIcon },
     { to: "/", label: "Home", Icon: HomeIcon },
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
@@ -25,7 +26,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
     { to: "/admin/rsvps", label: "Registrations", Icon: TicketIcon },
     { to: "/admin/prayer", label: "Prayer Wall", Icon: HandsIcon },
-    { to: "/admin", label: "Settings", Icon: SettingsIcon },
   ];
 
   // ✅ LOGOUT FUNCTION

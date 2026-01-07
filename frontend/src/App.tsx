@@ -33,26 +33,28 @@ import RSVPManager from "./pages/admin/RSVPManager";
 import PrayerManager from "./pages/admin/PrayerManager";
 import UserDashboard from "./pages/UserDashboard";
 import LogoIcon from "./assets/logo-icon.png";
+import ScannerPage from "./pages/Scanner";
 
-// --- FLOATING MESSENGER COMPONENT ---
+// --- FLOATING MESSENGER COMPONENT (FIXED) ---
 const FloatingMessenger = () => (
   <a
     href="https://m.me/yxcdo"
     target="_blank"
     rel="noopener noreferrer"
-    className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-brand-dark border-2 border-brand-accent shadow-[0_4px_20px_rgba(204,255,0,0.4)] hover:scale-110 hover:shadow-[0_6px_25px_rgba(204,255,0,0.6)] transition-all duration-300 group overflow-hidden"
-    title="Chat with us on Messenger"
+    // 1. Removed 'overflow-hidden' so the tooltip can be seen outside the circle
+    // 2. Added 'group' to control the hover state of children
+    className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-brand-dark border-2 border-brand-accent shadow-[0_4px_20px_rgba(204,255,0,0.4)] hover:scale-110 hover:shadow-[0_6px_25px_rgba(204,255,0,0.6)] transition-all duration-300 group"
+    title="Connect with us on Messenger"
   >
-    {/* ✅ Replaced SVG with Logo Image */}
     <img
       src={LogoIcon}
       alt="Chat with us"
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover rounded-full"
     />
 
-    {/* Optional Tooltip */}
-    <span className="absolute right-full mr-3 bg-white text-black text-xs font-bold px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">
-      Chat with us
+    {/* Tooltip: Shows on Hover */}
+    <span className="absolute right-full mr-4 bg-white text-black text-xs font-bold px-3 py-2 rounded-lg shadow-lg whitespace-nowrap pointer-events-none transition-all duration-300 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0">
+      Connect with us
     </span>
   </a>
 );
@@ -182,7 +184,7 @@ function App() {
             }
           />
 
-          {/* 6. RSVP Manager Page (✅ NEW ROUTE) */}
+          {/* 6. RSVP Manager Page */}
           <Route
             path="/admin/rsvps"
             element={
@@ -202,6 +204,18 @@ function App() {
                 <AdminLayout>
                   <PrayerManager />
                 </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/login" element={<Login />} />
+
+          {/* NEW SCANNER ROUTE (Protected, Standalone) */}
+          <Route
+            path="/scanner"
+            element={
+              <ProtectedRoute>
+                <ScannerPage />
               </ProtectedRoute>
             }
           />

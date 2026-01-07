@@ -1,170 +1,141 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { doc, getDoc, type DocumentData } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "../lib/firebase";
-
-type ResourceType = "Devotional" | "Sermon Notes" | "Small Group" | "Other";
-
-interface ResourceItem {
-  id: string;
-  title: string;
-  type?: ResourceType;
-  verse?: string;
-  excerpt?: string;
-  content?: string;
-  created_at?: any;
-}
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { resourcesData } from "../lib/resourcesData";
+import { useEffect } from "react";
 
 const ResourceDetails = () => {
   const { id } = useParams();
-  const [item, setItem] = useState<ResourceItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const navigate = useNavigate();
 
+  // Find the resource matching the URL ID
+  const resource = resourcesData.find((r) => r.id === Number(id));
+
+  // Scroll to top when opening
   useEffect(() => {
-    const run = async () => {
-      if (!db || !id) {
-        setLoading(false);
-        return;
-      }
+    window.scrollTo(0, 0);
+  }, []);
 
-      try {
-        const ref = doc(db, "resources", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          setNotFound(true);
-          return;
-        }
-
-        setItem({
-          id: snap.id,
-          ...(snap.data() as DocumentData),
-        } as ResourceItem);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    run();
-  }, [id]);
-
-  if (!isFirebaseConfigured) {
+  if (!resource) {
     return (
-      <div className="pt-24 pb-20 px-6 max-w-3xl mx-auto min-h-screen">
-        <h1 className="text-3xl font-display font-bold text-white mb-6 uppercase tracking-tight">
-          Resources
-        </h1>
-        <div className="bg-brand-gray p-6 rounded-2xl border border-white/5">
-          <p className="text-brand-muted">
-            Firebase is not configured. Add your <code>VITE_FIREBASE_*</code>{" "}
-            values to
-            <code>.env.local</code> and restart the dev server.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="pt-32 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-brand-accent"></div>
-        <p className="mt-4 text-brand-muted">Loading resource...</p>
-      </div>
-    );
-  }
-
-  if (notFound || !item) {
-    return (
-      <div className="pt-24 pb-20 px-6 max-w-3xl mx-auto min-h-screen">
-        <h1 className="text-3xl font-display font-bold text-white mb-6 uppercase tracking-tight">
-          Not Found
-        </h1>
-        <p className="text-brand-muted mb-8">
-          This resource may have been removed or the link is incorrect.
-        </p>
-        <Link
-          to="/resources"
-          className="inline-flex items-center gap-2 rounded-full bg-white/5 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors border border-white/10"
+      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-4 text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">Story not found</h2>
+        <button
+          onClick={() => navigate("/resources")}
+          className="text-brand-accent hover:underline"
         >
-          Back to Resources
-        </Link>
+          ← Back to Library
+        </button>
       </div>
     );
   }
-
-  const createdText = item.created_at?.toDate
-    ? item.created_at.toDate().toLocaleDateString()
-    : undefined;
 
   return (
-    <div className="pt-20 pb-20 min-h-screen">
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="mb-8">
+    <div className="min-h-screen bg-brand-dark pb-20">
+      {/* HERO IMAGE */}
+      <div className="h-[50vh] relative w-full overflow-hidden">
+        <img
+          src={resource.image}
+          alt={resource.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent"></div>
+
+        {/* Navigation Back */}
+        <div className="absolute top-24 left-4 md:left-12 z-10">
           <Link
             to="/resources"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-muted hover:text-white transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-sm font-bold"
           >
-            <span aria-hidden="true">←</span> Back to Resources
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to Library
           </Link>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-brand-gray shadow-2xl shadow-black/30 overflow-hidden">
-          <div className="p-6 md:p-10 border-b border-white/5">
-            <div className="flex items-start justify-between gap-6 flex-wrap">
-              <div>
-                <div className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-brand-muted border border-white/10">
-                  {item.type ?? "Other"}
-                </div>
-                <h1 className="mt-4 font-display text-3xl md:text-4xl font-bold text-white uppercase tracking-tight">
-                  {item.title}
-                </h1>
-                {item.verse && (
-                  <p className="mt-3 text-brand-accent font-semibold">
-                    {item.verse}
-                  </p>
-                )}
-              </div>
-
-              {createdText && (
-                <div className="rounded-2xl bg-brand-dark border border-white/10 px-4 py-3 text-sm text-brand-muted">
-                  <div className="text-[11px] uppercase tracking-wider">
-                    Published
-                  </div>
-                  <div className="mt-1 text-white font-semibold">
-                    {createdText}
-                  </div>
-                </div>
-              )}
+        {/* Title Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="bg-brand-accent text-brand-dark font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                {resource.category}
+              </span>
+              <span className="text-white/80 text-sm flex items-center gap-1">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {resource.readTime}
+              </span>
             </div>
+            <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-2 leading-tight">
+              {resource.title}
+            </h1>
+            <p className="text-xl text-white/80 font-serif italic">
+              {resource.scripture}
+            </p>
           </div>
+        </div>
+      </div>
 
-          <div className="p-6 md:p-10">
-            {item.excerpt && (
-              <div className="rounded-2xl border border-white/10 bg-brand-dark p-5 text-brand-muted">
-                <div className="text-[11px] uppercase tracking-wider text-brand-muted">
-                  Summary
-                </div>
-                <p className="mt-2 leading-relaxed">{item.excerpt}</p>
+      {/* CONTENT BODY */}
+      <div className="max-w-3xl mx-auto px-6 -mt-10 relative z-10">
+        <div className="bg-brand-gray border border-white/5 p-8 md:p-12 rounded-3xl shadow-2xl">
+          {/* The content is injected here */}
+          <div
+            className="prose prose-invert prose-lg max-w-none text-brand-muted"
+            dangerouslySetInnerHTML={{ __html: resource.content || "" }}
+          />
+
+          <div className="mt-12 pt-8 border-t border-white/10">
+            {/* ✅ NEW: Read Full Chapter Button */}
+            {resource.externalLink && (
+              <div className="mb-8">
+                <a
+                  href={resource.externalLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-white text-black font-bold py-4 rounded-xl hover:bg-brand-accent hover:text-black transition-all shadow-lg transform hover:scale-[1.01]"
+                >
+                  📖 Read {resource.scripture} on Bible Gateway
+                </a>
               </div>
             )}
 
-            <div className="mt-8">
-              <div className="text-[11px] uppercase tracking-wider text-brand-muted">
-                Content
-              </div>
-              <div className="mt-3 text-brand-text leading-relaxed whitespace-pre-line">
-                {item.content ?? "No content yet."}
-              </div>
-            </div>
-
-            <div className="mt-10">
-              <Link
-                to="/resources"
-                className="inline-flex items-center justify-center rounded-xl bg-brand-accent px-5 py-3 text-sm font-bold text-brand-dark hover:bg-white transition-colors"
+            <h4 className="text-white font-bold mb-4">Share this story</h4>
+            <div className="flex gap-4">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                Facebook
+              </button>
+              <button className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                Twitter
+              </button>
+              <button
+                onClick={() =>
+                  navigator.clipboard.writeText(window.location.href)
+                }
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
               >
-                Explore more resources
-              </Link>
+                Copy Link
+              </button>
             </div>
           </div>
         </div>
