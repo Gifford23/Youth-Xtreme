@@ -40,7 +40,7 @@ const MediaManager = () => {
   // Edit Modal State
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
 
-  // ✅ NEW: URL List State
+  // ✅ URL List State
   const [currentUrl, setCurrentUrl] = useState(""); // The input field
   const [addedUrls, setAddedUrls] = useState<string[]>([]); // The list of valid URLs
 
@@ -164,6 +164,7 @@ const MediaManager = () => {
     });
   }, [posts, searchTerm, filterSchool]);
 
+  // ✅ Helper: Extract YouTube ID
   const getYouTubeId = (url: string) => {
     const regExp =
       /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -180,7 +181,7 @@ const MediaManager = () => {
             Media <span className="text-brand-accent">Manager</span>
           </h1>
           <p className="text-brand-muted">
-            Curate the feed. Paste links, preview, and publish.
+            Curate the feed. Add photos, video montages, and highlights.
           </p>
         </div>
 
@@ -214,7 +215,7 @@ const MediaManager = () => {
           {/* Left Column: Input Form */}
           <div className="bg-brand-gray/50 rounded-3xl border border-white/5 p-6 shadow-xl h-fit">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              Create Album
+              Create Album / Montage
             </h2>
 
             <div className="space-y-4">
@@ -247,12 +248,18 @@ const MediaManager = () => {
               {/* URL ADDER */}
               <div>
                 <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
-                  Add Image URL
+                  {formData.type === "video"
+                    ? "Add Video URL (YouTube)"
+                    : "Add Image URL"}
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="https://example.com/image.jpg"
+                    placeholder={
+                      formData.type === "video"
+                        ? "https://youtube.com/watch?v=..."
+                        : "https://example.com/image.jpg"
+                    }
                     className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
                     value={currentUrl}
                     onChange={(e) => setCurrentUrl(e.target.value)}
@@ -322,7 +329,7 @@ const MediaManager = () => {
                   Caption
                 </label>
                 <textarea
-                  placeholder="Caption for these photos..."
+                  placeholder="Caption for these moments..."
                   className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none h-20 resize-none"
                   value={formData.caption}
                   onChange={(e) =>
@@ -343,7 +350,7 @@ const MediaManager = () => {
             </div>
           </div>
 
-          {/* Right Column: Preview Area */}
+          {/* Right Column: Preview Area (Optimized for Video & Photo) */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-white font-bold text-sm">
@@ -361,38 +368,69 @@ const MediaManager = () => {
 
             {addedUrls.length === 0 ? (
               <div className="border-2 border-dashed border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center text-brand-muted p-8 text-center">
-                <span className="text-2xl mb-2">🖼️</span>
+                <span className="text-2xl mb-2">
+                  {formData.type === "video" ? "🎬" : "🖼️"}
+                </span>
                 <p className="text-sm">
                   Paste a URL and click "➕" to see it here.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
-                {addedUrls.map((url, idx) => (
-                  <div
-                    key={idx}
-                    className="relative group aspect-square bg-black rounded-xl overflow-hidden border border-white/10"
-                  >
-                    <img
-                      src={url}
-                      alt="Preview"
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://placehold.co/400x400?text=Invalid+URL";
-                      }}
-                    />
-                    <button
-                      onClick={() => removeUrl(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110"
+                {addedUrls.map((url, idx) => {
+                  const isVideo = formData.type === "video";
+                  const youtubeId = isVideo ? getYouTubeId(url) : null;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="relative group aspect-square bg-black rounded-xl overflow-hidden border border-white/10"
                     >
-                      ✕
-                    </button>
-                    <div className="absolute bottom-1 left-1 bg-black/60 px-2 py-0.5 rounded text-[9px] text-white font-mono backdrop-blur-sm">
-                      #{idx + 1}
+                      {/* ✅ Smart Preview for Videos */}
+                      {isVideo ? (
+                        youtubeId ? (
+                          <div className="w-full h-full relative">
+                            <img
+                              src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                              alt="Video Preview"
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-black/50 rounded-full p-1">
+                                ▶️
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-brand-muted">
+                            <span className="text-lg">📹</span>
+                            <span className="text-[10px] mt-1">Video URL</span>
+                          </div>
+                        )
+                      ) : (
+                        <img
+                          src={url}
+                          alt="Preview"
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://placehold.co/400x400?text=Invalid+URL";
+                          }}
+                        />
+                      )}
+
+                      <button
+                        onClick={() => removeUrl(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110 z-10"
+                      >
+                        ✕
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-black/60 px-2 py-0.5 rounded text-[9px] text-white font-mono backdrop-blur-sm">
+                        #{idx + 1}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -469,10 +507,15 @@ const MediaManager = () => {
                       <div className="relative h-40 bg-black">
                         {post.type === "video" ? (
                           youtubeId ? (
-                            <img
-                              src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
-                              className="w-full h-full object-cover opacity-80"
-                            />
+                            <div className="w-full h-full relative">
+                              <img
+                                src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                                className="w-full h-full object-cover opacity-80"
+                              />
+                              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                <span className="text-2xl">▶️</span>
+                              </div>
+                            </div>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-brand-muted">
                               Video File

@@ -11,7 +11,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
 
 // ✅ CONFIGURATION: Campus Identities with LOGOS
-// Make sure you place these images in your 'public/logos' folder
 const CAMPUSES = [
   {
     id: "Liceo",
@@ -152,7 +151,6 @@ const CampusGallery = ({
 
 // --- SUB-COMPONENT: UPDATES (Sidebar News) ---
 const CampusUpdates = ({ items }: { items: MediaItem[] }) => {
-  // Filter for items with captions (simulating "News")
   const newsItems = items
     .filter((i) => i.caption && i.caption.length > 5)
     .slice(0, 4);
@@ -197,6 +195,11 @@ const CampusUpdates = ({ items }: { items: MediaItem[] }) => {
 // --- MAIN PAGE ---
 const Media = () => {
   const [activeSchool, setActiveSchool] = useState<string | null>(null); // Null = Hub View
+  // ✅ NEW: Tab State for "Montage Moments"
+  const [activeTab, setActiveTab] = useState<"overview" | "montage">(
+    "overview"
+  );
+
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
@@ -230,18 +233,25 @@ const Media = () => {
     return media.filter((m) => m.school === activeSchool);
   }, [media, activeSchool]);
 
+  // ✅ Filter specifically for videos
+  const videoMedia = useMemo(() => {
+    return filteredMedia.filter((m) => m.type === "video");
+  }, [filteredMedia]);
+
   const schoolConfig = CAMPUSES.find((c) => c.id === activeSchool);
 
   return (
-    <div className="min-h-screen bg-brand-dark pb-20 pt-20">
+    // ✅ FIXED: Increased top padding to pt-32 to clear the fixed navbar properly
+    <div className="min-h-screen bg-brand-dark pb-20 pt-32">
       {/* --- VIEW 1: THE HUB (Global Navigation) --- */}
       {!activeSchool ? (
         <div className="max-w-7xl mx-auto px-4 animate-fade-in">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-4">
+          {/* ✅ FIXED: Header Spacing & Visibility */}
+          <div className="text-center mb-16 relative z-10">
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-white mb-6 drop-shadow-lg">
               Campus <span className="text-brand-accent">Hub</span>
             </h1>
-            <p className="text-brand-muted text-lg max-w-2xl mx-auto">
+            <p className="text-brand-muted text-lg max-w-2xl mx-auto leading-relaxed">
               Select a campus to explore moments, highlights, and updates.
             </p>
           </div>
@@ -251,12 +261,14 @@ const Media = () => {
             {CAMPUSES.map((campus) => (
               <button
                 key={campus.id}
-                onClick={() => setActiveSchool(campus.id)}
+                onClick={() => {
+                  setActiveSchool(campus.id);
+                  setActiveTab("overview"); // Reset tab on switch
+                }}
                 className={`group relative overflow-hidden rounded-2xl aspect-[3/4] flex flex-col items-center justify-end p-4 border border-white/5 hover:border-brand-accent/50 transition-all bg-gradient-to-b ${campus.color}`}
               >
                 <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors" />
 
-                {/* ✅ UPDATED: Logo Rendering */}
                 <div className="relative z-10 text-center flex flex-col items-center transform group-hover:-translate-y-2 transition-transform">
                   <div className="w-24 h-24 mb-4 filter drop-shadow-2xl transition-transform group-hover:scale-110">
                     <img
@@ -264,7 +276,6 @@ const Media = () => {
                       alt={campus.name}
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        // Fallback if image fails
                         e.currentTarget.style.display = "none";
                         e.currentTarget.parentElement!.innerHTML = "🎓";
                       }}
@@ -301,7 +312,8 @@ const Media = () => {
         <div className="animate-slide-up">
           {/* Sticky Campus Header */}
           <div
-            className={`sticky top-0 z-40 bg-brand-dark/80 backdrop-blur-md border-b border-white/5 shadow-2xl`}
+            className={`sticky top-0 z-40 bg-brand-dark/90 backdrop-blur-xl border-b border-white/5 shadow-2xl transition-all`}
+            style={{ top: "0px" }} // Ensure it sticks at very top
           >
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <button
@@ -310,7 +322,6 @@ const Media = () => {
               >
                 ← Back to Hub
               </button>
-              {/* ✅ UPDATED: Header Logo */}
               <div className="flex items-center gap-3">
                 <img
                   src={schoolConfig?.logo}
@@ -327,11 +338,10 @@ const Media = () => {
 
           {/* Hero Banner */}
           <div
-            className={`relative h-60 w-full bg-gradient-to-r ${schoolConfig?.color} flex items-center justify-center mb-8`}
+            className={`relative h-64 w-full bg-gradient-to-r ${schoolConfig?.color} flex items-center justify-center mb-0`}
           >
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
             <div className="relative z-10 flex flex-col items-center text-center">
-              {/* ✅ UPDATED: Hero Logo */}
               <img
                 src={schoolConfig?.logo}
                 alt={schoolConfig?.name}
@@ -346,74 +356,159 @@ const Media = () => {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-[1fr,350px] gap-8">
-            {/* Left Column: Feed Content */}
-            <div>
-              {/* Section: Moments */}
-              <div className="mb-8">
-                <h3 className="text-brand-muted text-xs font-bold uppercase mb-4 tracking-widest">
-                  ✨ Moments
-                </h3>
-                {filteredMedia.length > 0 ? (
-                  <MomentsBar
-                    items={filteredMedia}
-                    onSelect={setSelectedItem}
-                  />
-                ) : (
-                  <p className="text-sm text-brand-muted italic">
-                    No moments shared yet.
-                  </p>
-                )}
-              </div>
+          {/* ✅ NEW: Tab Navigation Bar */}
+          <div className="border-b border-white/10 bg-black/20 mb-8">
+            <div className="max-w-7xl mx-auto px-4 flex gap-8">
+              <button
+                onClick={() => setActiveTab("overview")}
+                className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${
+                  activeTab === "overview"
+                    ? "border-brand-accent text-white"
+                    : "border-transparent text-brand-muted hover:text-white"
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("montage")}
+                className={`py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-all ${
+                  activeTab === "montage"
+                    ? "border-brand-accent text-white"
+                    : "border-transparent text-brand-muted hover:text-white"
+                }`}
+              >
+                Montage Moments 🎥
+              </button>
+            </div>
+          </div>
 
-              {/* Section: Gallery */}
-              <div className="mb-8">
-                <div className="flex justify-between items-end mb-6">
-                  <h3 className="text-2xl font-bold text-white">
-                    Media Gallery
-                  </h3>
-                  <span className="text-xs font-bold text-brand-accent px-3 py-1 bg-brand-accent/10 rounded-full">
-                    {filteredMedia.length} Posts
-                  </span>
+          <div className="max-w-7xl mx-auto px-4">
+            {/* --- TAB CONTENT: OVERVIEW --- */}
+            {activeTab === "overview" && (
+              <div className="grid lg:grid-cols-[1fr,350px] gap-8 animate-fade-in">
+                {/* Left Column: Feed Content */}
+                <div>
+                  {/* Section: Moments */}
+                  <div className="mb-8">
+                    <h3 className="text-brand-muted text-xs font-bold uppercase mb-4 tracking-widest">
+                      ✨ Moments
+                    </h3>
+                    {filteredMedia.length > 0 ? (
+                      <MomentsBar
+                        items={filteredMedia}
+                        onSelect={setSelectedItem}
+                      />
+                    ) : (
+                      <p className="text-sm text-brand-muted italic">
+                        No moments shared yet.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Section: Gallery */}
+                  <div className="mb-8">
+                    <div className="flex justify-between items-end mb-6">
+                      <h3 className="text-2xl font-bold text-white">
+                        Media Gallery
+                      </h3>
+                      <span className="text-xs font-bold text-brand-accent px-3 py-1 bg-brand-accent/10 rounded-full">
+                        {filteredMedia.length} Posts
+                      </span>
+                    </div>
+
+                    {filteredMedia.length === 0 ? (
+                      <div className="p-12 text-center border-2 border-dashed border-white/10 rounded-3xl">
+                        <p className="text-brand-muted">
+                          No media uploaded for {schoolConfig?.name} yet.
+                        </p>
+                      </div>
+                    ) : (
+                      <CampusGallery
+                        items={filteredMedia}
+                        onSelect={setSelectedItem}
+                      />
+                    )}
+                  </div>
                 </div>
 
-                {filteredMedia.length === 0 ? (
-                  <div className="p-12 text-center border-2 border-dashed border-white/10 rounded-3xl">
-                    <p className="text-brand-muted">
-                      No media uploaded for {schoolConfig?.name} yet.
+                {/* Right Column: Sidebar */}
+                <div className="space-y-6">
+                  <CampusUpdates items={filteredMedia} />
+
+                  {/* Quick Links */}
+                  <div className="bg-brand-gray/30 rounded-2xl p-5 border border-white/5">
+                    <h3 className="text-white font-bold text-sm uppercase mb-3">
+                      Quick Links
+                    </h3>
+                    <ul className="space-y-2 text-sm text-brand-muted">
+                      <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
+                        <span>Student Council</span> <span>↗</span>
+                      </li>
+                      <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
+                        <span>Campus Ministry</span> <span>↗</span>
+                      </li>
+                      <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
+                        <span>Join Volunteers</span> <span>↗</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: MONTAGE MOMENTS --- */}
+            {activeTab === "montage" && (
+              <div className="animate-fade-in pb-20">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-display font-bold text-white mb-2">
+                    Youth Moments
+                  </h2>
+                  <p className="text-brand-muted">
+                    Watch exclusive video highlights from {schoolConfig?.name}
+                  </p>
+                </div>
+
+                {videoMedia.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 border border-white/10 rounded-2xl bg-brand-gray/20">
+                    <span className="text-4xl mb-4">🎬</span>
+                    <h3 className="text-white font-bold text-lg">
+                      No Montages Yet
+                    </h3>
+                    <p className="text-brand-muted text-sm mt-2">
+                      Videos will appear here once uploaded.
                     </p>
                   </div>
                 ) : (
-                  <CampusGallery
-                    items={filteredMedia}
-                    onSelect={setSelectedItem}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {videoMedia.map((video) => (
+                      <div
+                        key={video.id}
+                        onClick={() => setSelectedItem(video)}
+                        className="group relative aspect-video bg-black rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-brand-accent/50 transition-all"
+                      >
+                        <video
+                          src={video.url}
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <span className="ml-1 text-black font-bold">▶</span>
+                          </div>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/50 to-transparent">
+                          <h3 className="text-white font-bold truncate">
+                            {video.event_name}
+                          </h3>
+                          <p className="text-xs text-gray-300 mt-1">
+                            {video.date}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
-
-            {/* Right Column: Sidebar */}
-            <div className="space-y-6">
-              <CampusUpdates items={filteredMedia} />
-
-              {/* Quick Links */}
-              <div className="bg-brand-gray/30 rounded-2xl p-5 border border-white/5">
-                <h3 className="text-white font-bold text-sm uppercase mb-3">
-                  Quick Links
-                </h3>
-                <ul className="space-y-2 text-sm text-brand-muted">
-                  <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
-                    <span>Student Council</span> <span>↗</span>
-                  </li>
-                  <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
-                    <span>Campus Ministry</span> <span>↗</span>
-                  </li>
-                  <li className="hover:text-brand-accent cursor-pointer transition-colors flex justify-between">
-                    <span>Join Volunteers</span> <span>↗</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
