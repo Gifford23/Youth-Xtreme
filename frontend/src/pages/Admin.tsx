@@ -8,10 +8,12 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
+  getDoc,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
-import { Link } from "react-router-dom";
-import { logActivity } from "../utils/logger"; // ✅ Import Logger
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../lib/firebase";
+import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { logActivity } from "../utils/logger";
 
 // Types
 interface AppEvent {
@@ -26,7 +28,8 @@ interface AppEvent {
 }
 
 const Admin = () => {
-  const [activeTab, setActiveTab] = useState("new event"); // Default tab
+  const navigate = useNavigate(); // ✅ Hook for redirection
+  const [activeTab, setActiveTab] = useState("new event");
 
   // --- STATE FOR LIST OF EVENTS ---
   const [eventsList, setEventsList] = useState<AppEvent[]>([]);
@@ -36,6 +39,9 @@ const Admin = () => {
   // --- STATE FOR ACTIVITY LOGS ---
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+
+  // --- STATE FOR ADMIN PROFILE (For the button preview) ---
+  const [userData, setUserData] = useState<any>(null);
 
   // --- STATE FOR CREATE EVENT FORM ---
   const [eventForm, setEventForm] = useState({
@@ -48,8 +54,19 @@ const Admin = () => {
     description: "",
   });
 
-  // 1. Fetch Events for the List
+  // 1. Fetch Events & Logs & User Profile
   useEffect(() => {
+    // ✅ Fetch Admin Profile Data (Just for the button image)
+    const unsubAuth = onAuthStateChanged(auth, async (user) => {
+      if (user && db) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserData(docSnap.data());
+        }
+      }
+    });
+
     if (activeTab === "all events") {
       setLoadingList(true);
       if (db) {
@@ -65,11 +82,13 @@ const Admin = () => {
           setEventsList(data);
           setLoadingList(false);
         });
-        return unsub;
+        return () => {
+          unsub();
+          unsubAuth();
+        };
       }
     }
 
-    // 2. Fetch Activity Logs
     if (activeTab === "activity logs") {
       setLoadingLogs(true);
       if (db) {
@@ -85,9 +104,14 @@ const Admin = () => {
           setActivityLogs(data);
           setLoadingLogs(false);
         });
-        return unsub;
+        return () => {
+          unsub();
+          unsubAuth();
+        };
       }
     }
+
+    return () => unsubAuth();
   }, [activeTab]);
 
   // 2. Handle Create Event
@@ -107,7 +131,6 @@ const Admin = () => {
         created_at: serverTimestamp(),
       });
 
-      // ✅ LOG ACTIVITY
       await logActivity(
         "Created Event",
         `Created event: ${eventForm.title} at ${eventForm.location}`
@@ -139,7 +162,6 @@ const Admin = () => {
     ) {
       try {
         await deleteDoc(doc(db!, "events", id));
-        // ✅ LOG ACTIVITY
         await logActivity("Deleted Event", `Deleted event ID: ${id}`);
       } catch (error) {
         alert("Error deleting event");
@@ -152,7 +174,6 @@ const Admin = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return alert("Please allow popups to print");
 
-    // Format Date & Time for Header
     const eventDate = event.event_date?.toDate
       ? event.event_date.toDate().toLocaleDateString("en-US", {
           weekday: "long",
@@ -167,7 +188,6 @@ const Admin = () => {
           .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : "";
 
-    // Generate 25 Empty Rows
     const rows = Array(25)
       .fill(0)
       .map(
@@ -184,7 +204,6 @@ const Admin = () => {
       )
       .join("");
 
-    // Construct the Printable HTML
     const html = `
       <html>
         <head>
@@ -242,7 +261,6 @@ const Admin = () => {
     }, 500);
   };
 
-  // 5. Filter Logic
   const filteredEvents = eventsList.filter(
     (event) =>
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -251,17 +269,51 @@ const Admin = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
-      {/* Header */}
-      <div className="mb-10 pt-6">
-        <h1 className="text-4xl font-display font-bold text-white mb-2">
-          ADMIN <span className="text-brand-accent">CONSOLE</span>
-        </h1>
-        <p className="text-brand-muted">
-          Manage your ministry events and data.
-        </p>
+      {/* Header with Edit Profile Button */}
+      <div className="mb-10 pt-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-display font-bold text-white mb-2">
+            ADMIN <span className="text-brand-accent">CONSOLE</span>
+          </h1>
+          <p className="text-brand-muted">
+            Manage your ministry events and data.
+          </p>
+        </div>
+
+        {/* ✅ UPDATED BUTTON: Redirects to User Dashboard */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
+        >
+          {userData?.photo_url ? (
+            <img
+              src={userData.photo_url}
+              alt="Profile"
+              className="w-6 h-6 rounded-full object-cover border border-white/20"
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-brand-accent text-brand-dark flex items-center justify-center text-xs">
+              {userData?.name?.charAt(0) || "A"}
+            </div>
+          )}
+          My Profile & Pass
+          <svg
+            className="w-4 h-4 text-brand-muted group-hover:text-white transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </button>
       </div>
 
-      {/* Quick Actions (RESTORED TO 3 COLUMNS) */}
+      {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-4 mb-12">
         <Link
           to="/scanner"
