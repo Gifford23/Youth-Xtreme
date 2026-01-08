@@ -1,44 +1,58 @@
-# Youth Xtreme CDO 🚀
+# 🚀 Youth Xtreme Web Platform
 
-The official web application for **Youth Xtreme**, a youth ministry based in Cagayan de Oro, Philippines. This platform helps connect students, track events, and manage ministry resources.
+A modern, full-stack web application designed for **Youth Xtreme** to manage ministry operations, events, testimonies, and member engagement. Built with performance, animation, and real-time data in mind.
 
-## 🌟 Features
+## 🛠 Tech Stack
 
-- **Event Tracking:** Real-time feed of upcoming worship services and gatherings.
-- **Admin Dashboard:** Restricted interface for leaders to publish new events.
-- **Responsive Design:** Fully mobile-optimized for youth on the go.
-- **Fast Performance:** Built with modern tooling for instant load times.
-
-## 🛠️ Tech Stack
-
-- **Frontend:** [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Frontend:** [React](https://reactjs.org/) (v18), [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Backend:** [Firebase](https://firebase.google.com/) (Firestore & Analytics)
-- **Language:** TypeScript
+- **Animations:** [Framer Motion](https://www.framer.com/motion/)
+- **Backend / Database:** [Firebase](https://firebase.google.com/) (Firestore, Auth, Storage)
+- **Icons:** Heroicons
+
+---
+
+## ✨ Features
+
+### 🌍 Public Facing (Member View)
+
+- **Dynamic Home Page:** Features a high-impact Hero section and an auto-playing **"Real Stories" Testimonial Slider**.
+- **Events & Calendar:** View upcoming ministry events with details.
+- **Resources Library:** Access to leadership guides, sermons, and materials.
+- **Prayer Wall:** Submit prayer requests and praise reports.
+- **Connect Card:** Digital form for new visitors to get connected.
+- **Media Gallery:** View photos and videos from recent gatherings.
+- **Leadership Journey:** Information on spiritual growth paths.
+- **Floating Messenger:** Direct integration with Facebook Messenger for quick support.
+
+### 🔐 Admin Dashboard (Protected)
+
+- **Secure Authentication:** Firebase Auth protection for all admin routes.
+- **Testimonial Manager:** Create, Read, Update, and Delete (CRUD) stories for the home page slider.
+- **Member Management:** Database of ministry members and roles.
+- **Event & Calendar Manager:** Schedule events and manage dates.
+- **Media Manager:** Upload and manage photos/videos in the gallery.
+- **Connect Card Inbox:** View and manage submissions from visitors.
+- **Prayer & Praise Moderation:** Approve or remove items from the prayer wall.
+- **RSVP & Attendance:** Track event registrations.
+- **QR Scanner:** Built-in scanner for checking in attendees.
+- **Activity Logs:** Audit trail of admin actions.
+
+---
 
 ## 🚀 Getting Started
 
-1.  **Clone the repository**
-    ```bash
-    git clone [https://github.com/Gifford23/Youth-Xtreme.git](https://github.com/Gifford23/Youth-Xtreme.git)
-    ```
-2.  **Install dependencies**
-    ```bash
-    cd Youth-Xtreme/frontend
-    npm install
-    ```
-3.  **Setup Environment Variables**
-    Create a `.env.local` file in the `frontend` directory with your Firebase keys:
-    ```env
-    VITE_FIREBASE_API_KEY=your_key
-    VITE_FIREBASE_AUTH_DOMAIN=your_domain
-    ...
-    ```
-4.  **Run the app**
-    ```bash
-    npm run dev
-    ```
+### 1. Prerequisites
 
-## 📱 Connect with Us
+Ensure you have **Node.js** (v16 or higher) installed on your machine.
 
-- **Facebook:** [@yxcdo](https://www.facebook.com/yxcdo)
+### 2. Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone [https://github.com/your-username/youth-xtreme.git](https://github.com/your-username/youth-xtreme.git)
+cd youth-xtreme
+npm install
+```
