@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+// ✅ 1. Import initializeFirestore instead of just getFirestore
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
@@ -23,7 +24,11 @@ const hasFirebaseConfig = Boolean(
 
 const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
 
-export const db = app ? getFirestore(app) : null; // For the Events database
+// ✅ 2. Use initializeFirestore with experimentalForceLongPolling
+export const db = app
+  ? initializeFirestore(app, { experimentalForceLongPolling: true })
+  : null;
+
 export const storage = app ? getStorage(app) : null; // For Flyer/Photo uploads
 export const auth = app ? getAuth(app) : null; // For Admin login
 export const isFirebaseConfigured = app !== null;

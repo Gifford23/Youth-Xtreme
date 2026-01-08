@@ -35,15 +35,14 @@ import UserDashboard from "./pages/UserDashboard";
 import LogoIcon from "./assets/logo-icon.png";
 import ScannerPage from "./pages/Scanner";
 import ActivityLog from "./pages/admin/ActivityLog";
+import TestimonialManager from "./pages/admin/TestimonialManager";
 
-// --- FLOATING MESSENGER COMPONENT (FIXED) ---
+// --- FLOATING MESSENGER COMPONENT ---
 const FloatingMessenger = () => (
   <a
     href="https://m.me/yxcdo"
     target="_blank"
     rel="noopener noreferrer"
-    // 1. Removed 'overflow-hidden' so the tooltip can be seen outside the circle
-    // 2. Added 'group' to control the hover state of children
     className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-brand-dark border-2 border-brand-accent shadow-[0_4px_20px_rgba(204,255,0,0.4)] hover:scale-110 hover:shadow-[0_6px_25px_rgba(204,255,0,0.6)] transition-all duration-300 group"
     title="Connect with us on Messenger"
   >
@@ -52,15 +51,13 @@ const FloatingMessenger = () => (
       alt="Chat with us"
       className="w-full h-full object-cover rounded-full"
     />
-
-    {/* Tooltip: Shows on Hover */}
     <span className="absolute right-full mr-4 bg-white text-black text-xs font-bold px-3 py-2 rounded-lg shadow-lg whitespace-nowrap pointer-events-none transition-all duration-300 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0">
       Connect with us
     </span>
   </a>
 );
 
-// 1. Create a Layout for Public Pages (Navbar + Content + Messenger)
+// 1. Public Layout
 const PublicLayout = () => {
   return (
     <>
@@ -73,7 +70,7 @@ const PublicLayout = () => {
   );
 };
 
-// 2. Security Guard for Admin
+// 2. Protected Admin Route
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -118,14 +115,15 @@ function App() {
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
             <Route path="/dashboard" element={<UserDashboard />} />
+            {/* ❌ REMOVED: TestimonialManager was here (unsafe) */}
           </Route>
 
           {/* Group B: Standalone Routes (No Navbar) */}
           <Route path="/login" element={<Login />} />
 
-          {/* Group C: Admin Routes */}
+          {/* Group C: Admin Routes (Protected) */}
 
-          {/* 1. Main Dashboard Home */}
+          {/* 1. Main Dashboard */}
           <Route
             path="/admin"
             element={
@@ -137,7 +135,7 @@ function App() {
             }
           />
 
-          {/* 2. Members Management Page */}
+          {/* 2. Members */}
           <Route
             path="/admin/members"
             element={
@@ -149,7 +147,7 @@ function App() {
             }
           />
 
-          {/* 3. Media Manager Page */}
+          {/* 3. Media Manager */}
           <Route
             path="/admin/media"
             element={
@@ -161,7 +159,7 @@ function App() {
             }
           />
 
-          {/* 4. Connect Cards Page */}
+          {/* 4. Connect Cards */}
           <Route
             path="/admin/connect"
             element={
@@ -173,7 +171,7 @@ function App() {
             }
           />
 
-          {/* 5. Calendar Manager Page */}
+          {/* 5. Calendar Manager */}
           <Route
             path="/admin/calendar"
             element={
@@ -185,7 +183,7 @@ function App() {
             }
           />
 
-          {/* 6. RSVP Manager Page */}
+          {/* 6. RSVP Manager */}
           <Route
             path="/admin/rsvps"
             element={
@@ -197,7 +195,7 @@ function App() {
             }
           />
 
-          {/* 7. Prayer Manager Page */}
+          {/* 7. Prayer Manager */}
           <Route
             path="/admin/prayer"
             element={
@@ -209,19 +207,7 @@ function App() {
             }
           />
 
-          <Route path="/login" element={<Login />} />
-
-          {/* NEW SCANNER ROUTE (Protected, Standalone) */}
-          <Route
-            path="/scanner"
-            element={
-              <ProtectedRoute>
-                <ScannerPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 8. Activity Logs (✅ NEW ROUTE) */}
+          {/* 8. Activity Logs */}
           <Route
             path="/admin/logs"
             element={
@@ -229,6 +215,28 @@ function App() {
                 <AdminLayout>
                   <ActivityLog />
                 </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ 9. TESTIMONIAL MANAGER (Added Here Securely) */}
+          <Route
+            path="/admin/testimonials"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <TestimonialManager />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Scanner Route */}
+          <Route
+            path="/scanner"
+            element={
+              <ProtectedRoute>
+                <ScannerPage />
               </ProtectedRoute>
             }
           />

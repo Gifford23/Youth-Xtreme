@@ -81,7 +81,7 @@ const InfiniteMarquee = () => (
             Youth Xtreme
           </span>
           <span className="text-2xl font-display font-bold uppercase tracking-widest text-brand-accent">
-            Faith • Fun • Future
+            Come sit with us
           </span>
           <span className="text-2xl font-display font-bold uppercase tracking-widest text-white">
             Bring His Life to the Next Generation
