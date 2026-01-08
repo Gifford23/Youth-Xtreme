@@ -33,7 +33,7 @@ const CAMPUSES = [
   },
   {
     id: "CU",
-    name: "Capitol U",
+    name: "CU",
     color: "from-blue-800 to-blue-500",
     logo: "/logos/cu.png",
   },
