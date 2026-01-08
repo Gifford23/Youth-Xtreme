@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   collection,
   addDoc,
@@ -12,6 +12,9 @@ import {
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
+// ✅ CONFIGURATION
+const SCHOOLS = ["General", "Liceo", "USTP", "COC", "CU", "STI", "SPC"];
+
 interface MediaItem {
   id: string;
   type: "photo" | "video";
@@ -19,28 +22,38 @@ interface MediaItem {
   caption: string;
   event_name: string;
   date: string;
+  school?: string;
   created_at: any;
 }
 
 const MediaManager = () => {
-  const [isPosting, setIsPosting] = useState(false);
+  // --- STATE ---
+  const [activeTab, setActiveTab] = useState<"upload" | "library">("library");
   const [posts, setPosts] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPosting, setIsPosting] = useState(false);
 
-  // Editing State
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ caption: "", event_name: "" });
+  // Search & Filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterSchool, setFilterSchool] = useState("All");
 
-  // Create Form State
-  const [newPost, setNewPost] = useState({
-    url: "",
+  // Edit Modal State
+  const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
+
+  // ✅ NEW: URL List State
+  const [currentUrl, setCurrentUrl] = useState(""); // The input field
+  const [addedUrls, setAddedUrls] = useState<string[]>([]); // The list of valid URLs
+
+  // Form State
+  const [formData, setFormData] = useState({
     caption: "",
     event_name: "",
     date: new Date().toISOString().split("T")[0],
     type: "photo" as "photo" | "video",
+    school: "General",
   });
 
-  // --- 1. FETCH POSTS (Real-time) ---
+  // --- 1. REAL-TIME DATA FETCH ---
   useEffect(() => {
     const q = query(collection(db, "media"), orderBy("created_at", "desc"));
     const unsubscribe = onSnapshot(q, (snap) => {
@@ -54,76 +67,103 @@ const MediaManager = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. CREATE POST ---
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!db || !newPost.url || !newPost.event_name) return;
+  // --- 2. HANDLE ADDING URL TO LIST ---
+  const handleAddUrl = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!currentUrl.trim()) return;
+
+    setAddedUrls((prev) => [...prev, currentUrl.trim()]);
+    setCurrentUrl(""); // Clear input
+  };
+
+  const removeUrl = (index: number) => {
+    setAddedUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // --- 3. PUBLISH ALL URLS ---
+  const handlePublish = async () => {
+    if (!db || addedUrls.length === 0 || !formData.event_name) {
+      return alert("Please add at least one URL and an Event Name.");
+    }
 
     setIsPosting(true);
     try {
-      await addDoc(collection(db, "media"), {
-        type: newPost.type,
-        url: newPost.url,
-        caption: newPost.caption,
-        event_name: newPost.event_name,
-        date: newPost.date,
-        featured: false,
-        created_at: serverTimestamp(),
+      // Loop through all added URLs and create a post for each
+      const promises = addedUrls.map((url) => {
+        return addDoc(collection(db, "media"), {
+          type: formData.type,
+          url: url,
+          caption: formData.caption,
+          event_name: formData.event_name,
+          date: formData.date,
+          school: formData.school,
+          featured: false,
+          created_at: serverTimestamp(),
+        });
       });
 
+      await Promise.all(promises);
+
       // Reset Form
-      setNewPost({
-        url: "",
+      setAddedUrls([]);
+      setFormData({
         caption: "",
         event_name: "",
         date: new Date().toISOString().split("T")[0],
         type: "photo",
+        school: "General",
       });
-      alert("✅ Published to Xtreme Feed!");
+      alert(`✅ Successfully published ${addedUrls.length} items!`);
+      setActiveTab("library");
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error("Error posting: ", error);
       alert("❌ Failed to post.");
     } finally {
       setIsPosting(false);
     }
   };
 
-  // --- 3. DELETE POST ---
+  // --- 4. DELETE ---
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm("Delete this post?")) return;
     try {
       await deleteDoc(doc(db, "media", id));
     } catch (error) {
-      console.error("Error deleting:", error);
       alert("Failed to delete.");
     }
   };
 
-  // --- 4. START EDITING ---
-  const startEdit = (post: MediaItem) => {
-    setEditingId(post.id);
-    setEditForm({
-      caption: post.caption,
-      event_name: post.event_name,
-    });
-  };
-
-  // --- 5. SAVE EDIT ---
-  const handleUpdate = async () => {
-    if (!editingId) return;
+  // --- 5. UPDATE ---
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
     try {
-      await updateDoc(doc(db, "media", editingId), {
-        caption: editForm.caption,
-        event_name: editForm.event_name,
+      await updateDoc(doc(db, "media", editingItem.id), {
+        url: editingItem.url,
+        caption: editingItem.caption,
+        event_name: editingItem.event_name,
+        date: editingItem.date,
+        school: editingItem.school,
+        type: editingItem.type,
       });
-      setEditingId(null);
+      setEditingItem(null);
     } catch (error) {
-      console.error("Error updating:", error);
       alert("Failed to update.");
     }
   };
 
-  // 🛠️ Helper: Extract YouTube ID
+  // Filter Logic
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      const matchesSearch =
+        post.caption.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.event_name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSchool =
+        filterSchool === "All" || post.school === filterSchool;
+      return matchesSearch && matchesSchool;
+    });
+  }, [posts, searchTerm, filterSchool]);
+
   const getYouTubeId = (url: string) => {
     const regExp =
       /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -132,257 +172,459 @@ const MediaManager = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto grid lg:grid-cols-[400px,1fr] gap-8">
-      {/* --- LEFT COLUMN: CREATE FORM --- */}
-      <div className="bg-brand-gray/50 rounded-2xl border border-white/5 p-6 h-fit sticky top-24">
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <span>📸</span> Create New Post
-        </h2>
+    <div className="max-w-7xl mx-auto px-4 pb-20">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-white/10 pb-6">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-white mb-2">
+            Media <span className="text-brand-accent">Manager</span>
+          </h1>
+          <p className="text-brand-muted">
+            Curate the feed. Paste links, preview, and publish.
+          </p>
+        </div>
 
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setNewPost({ ...newPost, type: "photo" })}
-              className={`p-3 rounded-xl border text-center font-bold text-sm transition-all ${
-                newPost.type === "photo"
-                  ? "bg-brand-accent text-brand-dark border-brand-accent"
-                  : "bg-black/20 text-brand-muted border-white/10 hover:bg-white/5"
-              }`}
-            >
-              Photo
-            </button>
-            <button
-              type="button"
-              onClick={() => setNewPost({ ...newPost, type: "video" })}
-              className={`p-3 rounded-xl border text-center font-bold text-sm transition-all ${
-                newPost.type === "video"
-                  ? "bg-brand-accent text-brand-dark border-brand-accent"
-                  : "bg-black/20 text-brand-muted border-white/10 hover:bg-white/5"
-              }`}
-            >
-              Video
-            </button>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-              Media URL
-            </label>
-            <input
-              type="text"
-              placeholder={
-                newPost.type === "photo"
-                  ? "Image URL"
-                  : "Video URL (YouTube/MP4)"
-              }
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
-              value={newPost.url}
-              onChange={(e) => setNewPost({ ...newPost, url: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                Event Name
-              </label>
-              <input
-                type="text"
-                placeholder="Event..."
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
-                value={newPost.event_name}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, event_name: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-accent focus:outline-none [color-scheme:dark]"
-                value={newPost.date}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, date: e.target.value })
-                }
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-              Caption
-            </label>
-            <textarea
-              placeholder="Caption..."
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none h-24 resize-none"
-              value={newPost.caption}
-              onChange={(e) =>
-                setNewPost({ ...newPost, caption: e.target.value })
-              }
-            />
-          </div>
-
+        <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 mt-4 md:mt-0">
           <button
-            type="submit"
-            disabled={isPosting}
-            className="w-full bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-all disabled:opacity-50 shadow-lg"
+            onClick={() => setActiveTab("library")}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+              activeTab === "library"
+                ? "bg-brand-accent text-brand-dark shadow-lg"
+                : "text-brand-muted hover:text-white"
+            }`}
           >
-            {isPosting ? "Posting..." : "Publish to Feed"}
+            📚 Library
           </button>
-        </form>
+          <button
+            onClick={() => setActiveTab("upload")}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+              activeTab === "upload"
+                ? "bg-brand-accent text-brand-dark shadow-lg"
+                : "text-brand-muted hover:text-white"
+            }`}
+          >
+            ☁️ Upload New
+          </button>
+        </div>
       </div>
 
-      {/* --- RIGHT COLUMN: MANAGE POSTS --- */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-white mb-2">
-          Media Library
-        </h1>
-        <p className="text-brand-muted mb-6">
-          Manage all photos and videos on the feed.
-        </p>
+      {/* --- TAB 1: UPLOAD NEW --- */}
+      {activeTab === "upload" && (
+        <div className="max-w-4xl mx-auto animate-fade-in-up grid md:grid-cols-[1.5fr,1fr] gap-8">
+          {/* Left Column: Input Form */}
+          <div className="bg-brand-gray/50 rounded-3xl border border-white/5 p-6 shadow-xl h-fit">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              Create Album
+            </h2>
 
-        <div className="space-y-4">
-          {loading ? (
-            <div className="text-brand-muted">Loading posts...</div>
-          ) : posts.length === 0 ? (
-            <div className="p-8 border-2 border-dashed border-white/10 rounded-2xl text-center text-brand-muted">
-              No media posts yet. Use the form to create one!
-            </div>
-          ) : (
-            posts.map((post) => {
-              const youtubeId =
-                post.type === "video" ? getYouTubeId(post.url) : null;
-
-              return (
-                <div
-                  key={post.id}
-                  className={`bg-brand-gray/30 border border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 transition-all hover:bg-brand-gray/50 ${
-                    editingId === post.id
-                      ? "ring-2 ring-brand-accent bg-brand-gray"
-                      : ""
+            <div className="space-y-4">
+              {/* Type Select */}
+              <div className="flex gap-2 bg-black/20 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, type: "photo" })}
+                  className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
+                    formData.type === "photo"
+                      ? "bg-brand-accent text-brand-dark shadow-md"
+                      : "text-brand-muted hover:text-white"
                   }`}
                 >
-                  {/* Thumbnail */}
-                  <div className="w-full sm:w-40 h-32 bg-black rounded-xl overflow-hidden shrink-0 relative group">
-                    {post.type === "video" ? (
-                      youtubeId ? (
-                        <img
-                          src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
-                          alt="Video Thumb"
-                          className="w-full h-full object-cover opacity-80"
-                        />
-                      ) : (
-                        <video
-                          src={post.url}
-                          className="w-full h-full object-cover opacity-80"
-                        />
-                      )
-                    ) : (
-                      <img
-                        src={post.url}
-                        alt="Post"
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                    )}
-                    <div className="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase backdrop-blur-sm border border-white/10">
-                      {post.type}
+                  📸 Photos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, type: "video" })}
+                  className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
+                    formData.type === "video"
+                      ? "bg-brand-accent text-brand-dark shadow-md"
+                      : "text-brand-muted hover:text-white"
+                  }`}
+                >
+                  🎥 Videos
+                </button>
+              </div>
+
+              {/* URL ADDER */}
+              <div>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
+                  Add Image URL
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                    value={currentUrl}
+                    onChange={(e) => setCurrentUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddUrl(e)}
+                  />
+                  <button
+                    onClick={handleAddUrl}
+                    disabled={!currentUrl}
+                    className="bg-white/10 text-white font-bold px-4 rounded-xl hover:bg-white/20 disabled:opacity-50"
+                  >
+                    ➕
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
+                    Event
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                    value={formData.event_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, event_name: e.target.value })
+                    }
+                    placeholder="Event Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-accent focus:outline-none [color-scheme:dark]"
+                    value={formData.date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
+                  School
+                </label>
+                <select
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                  value={formData.school}
+                  onChange={(e) =>
+                    setFormData({ ...formData, school: e.target.value })
+                  }
+                >
+                  {SCHOOLS.map((s) => (
+                    <option key={s} value={s} className="bg-brand-dark">
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1 ml-1">
+                  Caption
+                </label>
+                <textarea
+                  placeholder="Caption for these photos..."
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none h-20 resize-none"
+                  value={formData.caption}
+                  onChange={(e) =>
+                    setFormData({ ...formData, caption: e.target.value })
+                  }
+                />
+              </div>
+
+              <button
+                onClick={handlePublish}
+                disabled={isPosting || addedUrls.length === 0}
+                className="w-full bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-all transform active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-lg"
+              >
+                {isPosting
+                  ? "Publishing..."
+                  : `Publish ${addedUrls.length} Items`}
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Preview Area */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-white font-bold text-sm">
+                Preview Queue ({addedUrls.length})
+              </h3>
+              {addedUrls.length > 0 && (
+                <button
+                  onClick={() => setAddedUrls([])}
+                  className="text-xs text-red-400 hover:text-white"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            {addedUrls.length === 0 ? (
+              <div className="border-2 border-dashed border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center text-brand-muted p-8 text-center">
+                <span className="text-2xl mb-2">🖼️</span>
+                <p className="text-sm">
+                  Paste a URL and click "➕" to see it here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                {addedUrls.map((url, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group aspect-square bg-black rounded-xl overflow-hidden border border-white/10"
+                  >
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://placehold.co/400x400?text=Invalid+URL";
+                      }}
+                    />
+                    <button
+                      onClick={() => removeUrl(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110"
+                    >
+                      ✕
+                    </button>
+                    <div className="absolute bottom-1 left-1 bg-black/60 px-2 py-0.5 rounded text-[9px] text-white font-mono backdrop-blur-sm">
+                      #{idx + 1}
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-                  {/* Content & Edit Mode */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    {editingId === post.id ? (
-                      <div className="space-y-3 animate-fade-in">
-                        <input
-                          type="text"
-                          value={editForm.event_name}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              event_name: e.target.value,
-                            })
-                          }
-                          className="w-full bg-black/40 border border-brand-accent rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none"
-                          placeholder="Event Name"
-                        />
-                        <textarea
-                          value={editForm.caption}
-                          onChange={(e) =>
-                            setEditForm({
-                              ...editForm,
-                              caption: e.target.value,
-                            })
-                          }
-                          className="w-full bg-black/40 border border-brand-accent rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none h-16 resize-none"
-                          placeholder="Caption"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleUpdate}
-                            className="bg-brand-accent text-brand-dark px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white"
-                          >
-                            Save Changes
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="text-brand-muted px-3 py-1.5 text-xs hover:text-white"
-                          >
-                            Cancel
-                          </button>
+      {/* --- TAB 2: LIBRARY (MANAGE) --- */}
+      {activeTab === "library" && (
+        <div className="animate-fade-in">
+          {/* Controls */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:border-brand-accent focus:outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <svg
+                className="w-5 h-5 text-gray-500 absolute left-3 top-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            <select
+              className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-accent focus:outline-none cursor-pointer"
+              value={filterSchool}
+              onChange={(e) => setFilterSchool(e.target.value)}
+            >
+              <option value="All">All Schools</option>
+              {SCHOOLS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Table / Grid */}
+          <div className="bg-brand-gray/30 border border-white/5 rounded-2xl overflow-hidden min-h-[400px]">
+            {loading ? (
+              <div className="p-8 text-center text-brand-muted">
+                Loading library...
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="p-12 text-center flex flex-col items-center">
+                <div className="text-4xl mb-2">📂</div>
+                <h3 className="text-white font-bold mb-1">Library Empty</h3>
+                <p className="text-brand-muted text-sm">
+                  No media found matching your filters.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+                {filteredPosts.map((post) => {
+                  const youtubeId =
+                    post.type === "video" ? getYouTubeId(post.url) : null;
+                  return (
+                    <div
+                      key={post.id}
+                      className="bg-brand-dark border border-white/5 rounded-xl overflow-hidden group hover:border-white/20 transition-all flex flex-col"
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative h-40 bg-black">
+                        {post.type === "video" ? (
+                          youtubeId ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                              className="w-full h-full object-cover opacity-80"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-brand-muted">
+                              Video File
+                            </div>
+                          )
+                        ) : (
+                          <img
+                            src={post.url}
+                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                          />
+                        )}
+                        <div className="absolute top-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm border border-white/10 uppercase">
+                          {post.school || "General"}
                         </div>
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-bold text-white">
-                            {post.event_name}
-                          </h3>
-                          <span className="text-xs text-brand-muted">
-                            {post.date}
-                          </span>
-                        </div>
-                        <p className="text-sm text-brand-muted line-clamp-2 mb-3">
-                          {post.caption}
+
+                      {/* Info */}
+                      <div className="p-4 flex-1 flex flex-col">
+                        <h4
+                          className="font-bold text-white text-sm mb-1 line-clamp-1"
+                          title={post.event_name}
+                        >
+                          {post.event_name}
+                        </h4>
+                        <p className="text-xs text-gray-500 mb-2">
+                          {post.date}
+                        </p>
+                        <p className="text-xs text-brand-muted line-clamp-2 mb-4 flex-1">
+                          {post.caption || "No caption"}
                         </p>
 
-                        <div className="flex gap-3 mt-auto">
+                        <div className="flex gap-2 mt-auto">
                           <button
-                            onClick={() => startEdit(post)}
-                            className="text-xs font-bold text-brand-muted hover:text-white flex items-center gap-1 transition-colors"
+                            onClick={() => setEditingItem(post)}
+                            className="flex-1 bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-2 rounded-lg transition-colors"
                           >
-                            ✏️ Edit
+                            Edit
                           </button>
                           <button
                             onClick={() => handleDelete(post.id)}
-                            className="text-xs font-bold text-brand-muted hover:text-red-400 flex items-center gap-1 transition-colors"
+                            className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold py-2 rounded-lg transition-colors"
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
-                          <a
-                            href={post.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs font-bold text-brand-muted hover:text-brand-accent flex items-center gap-1 transition-colors ml-auto"
-                          >
-                            🔗 Link
-                          </a>
                         </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* --- EDIT MODAL --- */}
+      {editingItem && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-brand-gray border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-2xl relative">
+            <button
+              onClick={() => setEditingItem(null)}
+              className="absolute top-4 right-4 text-brand-muted hover:text-white"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-bold text-white mb-6">Edit Media</h2>
+
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
+                  Media URL
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                  value={editingItem.url}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, url: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
+                    Event Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                    value={editingItem.event_name}
+                    onChange={(e) =>
+                      setEditingItem({
+                        ...editingItem,
+                        event_name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
+                    School
+                  </label>
+                  <select
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none"
+                    value={editingItem.school}
+                    onChange={(e) =>
+                      setEditingItem({ ...editingItem, school: e.target.value })
+                    }
+                  >
+                    {SCHOOLS.map((s) => (
+                      <option key={s} value={s} className="bg-brand-dark">
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
+                  Caption
+                </label>
+                <textarea
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:border-brand-accent focus:outline-none h-24 resize-none"
+                  value={editingItem.caption}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, caption: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-colors"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  className="flex-1 bg-white/5 text-white font-bold py-3 rounded-xl hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
