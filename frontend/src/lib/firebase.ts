@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-// ✅ 1. Import initializeFirestore instead of just getFirestore
-import { getFirestore, initializeFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
@@ -13,22 +12,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const hasFirebaseConfig = Boolean(
-  firebaseConfig.apiKey &&
-    firebaseConfig.authDomain &&
-    firebaseConfig.projectId &&
-    firebaseConfig.storageBucket &&
-    firebaseConfig.messagingSenderId &&
-    firebaseConfig.appId
-);
+// Initialize App directly (TypeScript will now see 'app' as guaranteed)
+const app = initializeApp(firebaseConfig);
 
-const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
+// Initialize services
+// We keep your special long-polling fix here
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
+export const storage = getStorage(app);
+export const auth = getAuth(app);
 
-// ✅ 2. Use initializeFirestore with experimentalForceLongPolling
-export const db = app
-  ? initializeFirestore(app, { experimentalForceLongPolling: true })
-  : null;
-
-export const storage = app ? getStorage(app) : null; // For Flyer/Photo uploads
-export const auth = app ? getAuth(app) : null; // For Admin login
-export const isFirebaseConfigured = app !== null;
+export const isFirebaseConfigured = true;
