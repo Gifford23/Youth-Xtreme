@@ -21,7 +21,7 @@ const Testimonials = () => {
 
   // --- 1. FETCH REAL DATA FROM FIREBASE ---
   useEffect(() => {
-    if (!db) return;
+    // ✅ FIX 1: Removed 'if (!db) return' since we fixed firebase.ts to guarantee db exists.
 
     const q = query(
       collection(db, "testimonials"),
@@ -34,7 +34,9 @@ const Testimonials = () => {
       setStories(data);
       setLoading(false);
     });
-    return () => unsub;
+
+    // ✅ FIX 2: Added parenthesis () to actually CALL the unsubscribe function
+    return () => unsub();
   }, []);
 
   // --- 2. AUTO-PLAY ---
@@ -94,7 +96,6 @@ const Testimonials = () => {
         </div>
 
         {/* --- SLIDER CONTAINER --- */}
-        {/* ✅ FIX 1: Increased height from 450px to 600px (md:h-[600px]) to fit content */}
         <div className="relative w-full min-h-[600px] md:h-[600px] bg-brand-gray/30 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
@@ -111,7 +112,6 @@ const Testimonials = () => {
               className="absolute inset-0 grid md:grid-cols-2 h-full"
             >
               {/* LEFT SIDE: Text Content */}
-              {/* ✅ FIX 2: Added 'overflow-y-auto' so you can scroll if text is too long */}
               <div className="p-8 md:p-12 flex flex-col justify-center relative z-10 order-2 md:order-1 bg-black/80 md:bg-gradient-to-r md:from-brand-dark md:via-brand-dark/90 md:to-transparent backdrop-blur-sm h-full overflow-y-auto scrollbar-hide">
                 <div className="text-6xl text-brand-accent font-serif opacity-30 mb-2">
                   "
@@ -121,8 +121,7 @@ const Testimonials = () => {
                   {currentStory.quote}
                 </p>
 
-                {/* ✅ ORGANIZED LABELS */}
-                {/* 'mt-auto' pushes this to bottom, but scrolling ensures it's reachable */}
+                {/* ORGANIZED LABELS */}
                 <div className="mt-auto pt-6 border-t border-white/10 flex flex-col gap-3 pb-8">
                   <h4 className="text-3xl font-display font-bold text-white uppercase tracking-tight">
                     {currentStory.name}
@@ -161,7 +160,7 @@ const Testimonials = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* --- CONTROLS (Arrows) --- */}
+          {/* --- CONTROLS --- */}
           <div className="absolute bottom-6 right-6 md:right-12 z-20 flex gap-3">
             <button
               onClick={prevSlide}

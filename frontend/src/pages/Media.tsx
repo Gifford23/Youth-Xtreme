@@ -212,7 +212,8 @@ const Media = () => {
       setMedia(snap.docs.map((d) => ({ id: d.id, ...d.data() } as MediaItem)));
       setLoading(false);
     });
-    return () => unsub;
+    // ✅ FIX 1: Add () to call the unsubscribe function
+    return () => unsub();
   }, []);
 
   // 2. Check Admin
@@ -224,7 +225,8 @@ const Media = () => {
         setIsAdmin(userSnap.exists() && userSnap.data().role === "admin");
       }
     });
-    return () => unsub;
+    // ✅ FIX 2: Add () to call the unsubscribe function
+    return () => unsub();
   }, []);
 
   // 3. Filter Logic

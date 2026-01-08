@@ -38,7 +38,6 @@ const TestimonialManager = () => {
 
   // --- 1. FETCH DATA ---
   useEffect(() => {
-    // Listen to real-time updates
     const q = query(
       collection(db, "testimonials"),
       orderBy("created_at", "desc")
@@ -50,10 +49,12 @@ const TestimonialManager = () => {
       setTestimonials(data);
       setLoading(false);
     });
-    return () => unsub;
+
+    // ✅ FIX: Added () to call the function
+    return () => unsub();
   }, []);
 
-  // --- 2. SUBMIT (CREATE / UPDATE) ---
+  // --- 2. SUBMIT ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.quote)
@@ -61,29 +62,17 @@ const TestimonialManager = () => {
 
     try {
       if (isEditing) {
-        // UPDATE existing
-        await updateDoc(doc(db, "testimonials", isEditing.id), {
-          ...formData,
-        });
+        await updateDoc(doc(db, "testimonials", isEditing.id), { ...formData });
         alert("Updated successfully!");
         setIsEditing(null);
       } else {
-        // CREATE new
         await addDoc(collection(db, "testimonials"), {
           ...formData,
           created_at: serverTimestamp(),
         });
         alert("Created successfully!");
       }
-
-      // Reset Form
-      setFormData({
-        name: "",
-        campus: "Liceo U",
-        role: "Member",
-        quote: "",
-        image: "",
-      });
+      setFormData({ name: "", campus: "Liceo U", role: "Member", quote: "", image: "" });
     } catch (error) {
       console.error(error);
       alert("Error saving testimonial.");
@@ -100,7 +89,6 @@ const TestimonialManager = () => {
     }
   };
 
-  // --- 4. PREPARE EDIT ---
   const handleEdit = (item: Testimonial) => {
     setIsEditing(item);
     setFormData({
@@ -129,100 +117,64 @@ const TestimonialManager = () => {
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                Name
-              </label>
+              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">Name</label>
               <input
                 type="text"
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-brand-accent focus:outline-none"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Angelo"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                  Campus
-                </label>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">Campus</label>
                 <select
                   className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-brand-accent focus:outline-none"
                   value={formData.campus}
-                  onChange={(e) =>
-                    setFormData({ ...formData, campus: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, campus: e.target.value })}
                 >
-                  {[
-                    "Liceo U",
-                    "USTP",
-                    "Phinma COC",
-                    "Xavier U",
-                    "Capitol U",
-                    "SPC",
-                    "Other",
-                  ].map((c) => (
-                    <option key={c} value={c} className="bg-brand-dark">
-                      {c}
-                    </option>
+                  {["Liceo U", "USTP", "Phinma COC", "Xavier U", "Capitol U", "SPC", "Other"].map((c) => (
+                    <option key={c} value={c} className="bg-brand-dark">{c}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                  Role
-                </label>
+                <label className="block text-xs font-bold text-brand-muted uppercase mb-1">Role</label>
                 <input
                   type="text"
                   className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-brand-accent focus:outline-none"
                   value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   placeholder="e.g. Student Leader"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                Image URL or Path
-              </label>
+              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">Image URL</label>
               <input
                 type="text"
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-brand-accent focus:outline-none"
                 value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                 placeholder="/testimonials/angelo.jpg"
               />
-              <p className="text-[10px] text-gray-500 mt-1">
-                Paste a full URL or a path from your public folder.
-              </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">
-                Testimony Quote
-              </label>
+              <label className="block text-xs font-bold text-brand-muted uppercase mb-1">Testimony Quote</label>
               <textarea
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-brand-accent focus:outline-none h-32 resize-none"
                 value={formData.quote}
-                onChange={(e) =>
-                  setFormData({ ...formData, quote: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
                 placeholder="Share their story..."
               />
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                className="flex-1 bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-colors"
-              >
+              <button type="submit" className="flex-1 bg-brand-accent text-brand-dark font-bold py-3 rounded-xl hover:bg-white transition-colors">
                 {isEditing ? "Update Story" : "Publish Story"}
               </button>
               {isEditing && (
@@ -230,13 +182,7 @@ const TestimonialManager = () => {
                   type="button"
                   onClick={() => {
                     setIsEditing(null);
-                    setFormData({
-                      name: "",
-                      campus: "Liceo U",
-                      role: "Member",
-                      quote: "",
-                      image: "",
-                    });
+                    setFormData({ name: "", campus: "Liceo U", role: "Member", quote: "", image: "" });
                   }}
                   className="px-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors"
                 >
@@ -249,9 +195,12 @@ const TestimonialManager = () => {
 
         {/* --- RIGHT: LIST --- */}
         <div className="space-y-4">
-          <h2 className="text-white font-bold mb-4">
-            Existing Stories ({testimonials.length})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-white font-bold">Existing Stories</h2>
+            <span className="bg-brand-accent/10 text-brand-accent text-xs font-bold px-2 py-1 rounded-md border border-brand-accent/20">
+              {testimonials.length} Total
+            </span>
+          </div>
 
           {loading ? (
             <p className="text-brand-muted">Loading...</p>
@@ -264,47 +213,65 @@ const TestimonialManager = () => {
               {testimonials.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-brand-dark border border-white/10 p-4 rounded-2xl flex gap-4 items-start group hover:border-brand-accent/50 transition-colors"
+                  className="bg-brand-dark border border-white/10 p-5 rounded-2xl flex gap-5 items-start group hover:border-brand-accent/30 hover:bg-white/5 transition-all"
                 >
-                  <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-black border border-white/20">
+                  {/* Avatar */}
+                  <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-black border-2 border-white/10 shadow-lg group-hover:border-brand-accent transition-colors">
                     <img
                       src={item.image || "https://placehold.co/100x100?text=?"}
                       alt={item.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://placehold.co/100x100?text=?";
-                      }}
+                      onError={(e) => { e.currentTarget.src = "https://placehold.co/100x100?text=?"; }}
                     />
                   </div>
 
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="text-white font-bold">{item.name}</h4>
-                        <p className="text-brand-accent text-xs uppercase font-bold">
-                          {item.campus} <span className="text-gray-500">|</span>{" "}
-                          {item.role}
-                        </p>
+                        <h4 className="text-lg font-bold text-white leading-none mb-2">{item.name}</h4>
+                        
+                        {/* ORGANIZED BADGES */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-brand-accent text-brand-dark uppercase tracking-wide">
+                            {item.campus}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/10 text-gray-300 border border-white/10">
+                            {item.role}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Action Buttons */}
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg"
+                          className="p-2 bg-white/5 hover:bg-white/20 text-white rounded-lg border border-white/10 transition-colors"
+                          title="Edit"
                         >
-                          Edit
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                            <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                            <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="text-xs bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-1 rounded-lg"
+                          className="p-2 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg border border-red-500/20 transition-colors"
+                          title="Delete"
                         >
-                          Delete
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                            <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                          </svg>
                         </button>
                       </div>
                     </div>
-                    <p className="text-gray-400 text-sm mt-2 line-clamp-2 italic">
-                      "{item.quote}"
-                    </p>
+                    
+                    {/* Quote Preview */}
+                    <div className="relative pl-3 border-l-2 border-white/20 mt-3">
+                      <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 italic">
+                        "{item.quote}"
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
