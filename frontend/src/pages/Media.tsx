@@ -117,7 +117,7 @@ const MomentsBar = ({
                   const video = getVideoData(item.url);
                   return video.type === "youtube" ? (
                     <img
-                      src={video.thumbnail}
+                      src={video.thumbnail || ""}
                       className="w-full h-full object-cover"
                     />
                   ) : video.type === "facebook" ? (

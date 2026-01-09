@@ -129,9 +129,11 @@ const EventDetails = () => {
     : "Date TBD";
 
   return (
-    <div className="pt-20 pb-20 min-h-screen">
+    // Changed pt-20 to pt-28 to give the "Back" button room to breathe from the top
+    <div className="pt-28 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-6">
+        {/* Changed mb-6 to mb-10 for a cleaner separation from the main card */}
+        <div className="mb-10">
           <Link
             to="/events"
             className="inline-flex items-center gap-2 text-sm font-semibold text-brand-muted hover:text-white transition-colors"
