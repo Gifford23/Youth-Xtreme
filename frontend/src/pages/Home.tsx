@@ -11,6 +11,7 @@ import {
   type DocumentData,
   doc,
   getDoc,
+  where,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../lib/firebase";
@@ -25,7 +26,7 @@ import Mission from "../components/home/Mission";
 import Testimonials from "../components/home/Testimonials";
 import CallToAction from "../components/home/CallToAction";
 import VerseOfTheDay from "../components/home/VerseOfTheDay";
-import NextEventCountdown from "../components/home/NextEventCountdown"; // ✅ Feature is here
+import NextEventCountdown from "../components/home/NextEventCountdown";
 
 // --- TYPES ---
 interface AppEvent {
@@ -35,6 +36,7 @@ interface AppEvent {
   location: string;
   category: string;
   image_url: string;
+  is_featured?: boolean; // Added for type safety
 }
 
 interface MediaItem {
@@ -151,6 +153,7 @@ const TYPEWRITER_WORDS = ["FAMILY", "ONE", "CHOSEN", "THE LIGHT", "RELENTLESS"];
 const Home = () => {
   // --- STATE ---
   const [events, setEvents] = useState<AppEvent[]>([]);
+  const [featuredEvent, setFeaturedEvent] = useState<AppEvent | null>(null); // ✅ Store the single featured event
   const [loading, setLoading] = useState(true);
   const [featuredMedia, setFeaturedMedia] = useState<MediaItem | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -177,9 +180,11 @@ const Home = () => {
       }
     });
 
-    // 2. Fetch Events (Top 3)
+    // 2. Fetch Events (Top 3 UPCOMING Events for List)
+    const today = new Date();
     const eventsQuery = query(
       collection(db, "events"),
+      where("event_date", ">=", today),
       orderBy("event_date", "asc"),
       limit(3)
     );
@@ -194,7 +199,23 @@ const Home = () => {
       setLoading(false);
     });
 
-    // 3. Fetch Media (Latest 1)
+    // 3. ✅ Fetch FEATURED Event (For Countdown)
+    // Only grab events marked as is_featured: true
+    const featuredQuery = query(
+      collection(db, "events"),
+      where("is_featured", "==", true),
+      limit(1)
+    );
+    const featuredUnsubscribe = onSnapshot(featuredQuery, (querySnapshot) => {
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        setFeaturedEvent({ id: doc.id, ...doc.data() } as AppEvent);
+      } else {
+        setFeaturedEvent(null); // No featured event = Hide countdown
+      }
+    });
+
+    // 4. Fetch Media (Latest 1)
     const mediaQuery = query(
       collection(db, "media"),
       orderBy("created_at", "desc"),
@@ -210,6 +231,7 @@ const Home = () => {
     return () => {
       unsubAuth();
       eventsUnsubscribe();
+      featuredUnsubscribe(); // Cleanup featured listener
       mediaUnsubscribe();
     };
   }, []);
@@ -223,7 +245,6 @@ const Home = () => {
       {/* SECTION 1: HERO */}
       {/* ---------------------------------- */}
       <div className="relative min-h-screen w-full overflow-hidden flex items-center">
-        {/* Background */}
         <div className="absolute inset-0">
           <img
             src="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
@@ -234,10 +255,8 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/90 via-brand-dark/40 to-transparent"></div>
         </div>
 
-        {/* Content */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 py-24 lg:py-0">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -284,7 +303,6 @@ const Home = () => {
               </div>
             </motion.div>
 
-            {/* Right: Verse Card */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -296,7 +314,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden lg:block text-brand-muted">
           <svg
             className="w-6 h-6"
@@ -318,7 +335,14 @@ const Home = () => {
       {/* SECTION 2: MARQUEE & COUNTDOWN */}
       {/* ---------------------------------- */}
       <InfiniteMarquee />
-      <NextEventCountdown />
+
+      {/* ✅ Logic Applied: Only render if 'featuredEvent' exists */}
+      {featuredEvent && (
+        <NextEventCountdown
+          targetDate={featuredEvent.event_date?.toDate()}
+          title={featuredEvent.title}
+        />
+      )}
 
       {/* ---------------------------------- */}
       {/* SECTION 3: MISSION */}
@@ -328,7 +352,7 @@ const Home = () => {
       </ScrollReveal>
 
       {/* ---------------------------------- */}
-      {/* SECTION 4: EVENTS */}
+      {/* SECTION 4: EVENTS LIST */}
       {/* ---------------------------------- */}
       <div className="bg-brand-dark py-24 relative z-10">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-brand-gray/30 to-transparent pointer-events-none"></div>

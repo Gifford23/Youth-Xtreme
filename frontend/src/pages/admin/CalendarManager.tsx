@@ -9,6 +9,9 @@ import {
   addDoc,
   updateDoc,
   serverTimestamp,
+  writeBatch,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -20,6 +23,7 @@ interface AppEvent {
   category: string;
   image_url: string;
   description: string;
+  is_featured?: boolean;
 }
 
 const CalendarManager = () => {
@@ -53,13 +57,46 @@ const CalendarManager = () => {
     return () => unsubscribe();
   }, []);
 
-  // 2. Handle Create / Update
+  // 2. TOGGLE FEATURED LOGIC (Activate/Deactivate)
+  const handleSetFeatured = async (event: AppEvent) => {
+    if (!db) return;
+    try {
+      const batch = writeBatch(db);
+      const newStatus = !event.is_featured; // Toggle the current status
+
+      // If we are activating this event, we must deactivate all others first
+      if (newStatus === true) {
+        const featuredQuery = query(
+          collection(db, "events"),
+          where("is_featured", "==", true)
+        );
+        const featuredSnapshot = await getDocs(featuredQuery);
+
+        featuredSnapshot.forEach((doc) => {
+          // Don't waste writes on the one we're about to change anyway
+          if (doc.id !== event.id) {
+            batch.update(doc.ref, { is_featured: false });
+          }
+        });
+      }
+
+      // Update the specific event with the new status (True or False)
+      const eventRef = doc(db, "events", event.id);
+      batch.update(eventRef, { is_featured: newStatus });
+
+      await batch.commit();
+    } catch (error) {
+      console.error("Error updating featured event:", error);
+      alert("❌ Failed to update status.");
+    }
+  };
+
+  // 3. Handle Create / Update
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
 
     try {
-      // Combine Date & Time into a JS Date Object
       const eventDateTime = new Date(`${form.date}T${form.time}`);
 
       const eventData = {
@@ -73,13 +110,12 @@ const CalendarManager = () => {
       };
 
       if (isEditing && selectedId) {
-        // UPDATE Existing
         await updateDoc(doc(db, "events", selectedId), eventData);
         alert("✅ Event Updated!");
       } else {
-        // CREATE New
         await addDoc(collection(db, "events"), {
           ...eventData,
+          is_featured: false,
           created_at: serverTimestamp(),
         });
         alert("✅ Event Created!");
@@ -92,27 +128,24 @@ const CalendarManager = () => {
     }
   };
 
-  // 3. Handle Delete
+  // 4. Handle Delete
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
       await deleteDoc(doc(db, "events", id));
     }
   };
 
-  // 4. Load Event into Form for Editing
+  // 5. Load Event into Form
   const handleEdit = (event: AppEvent) => {
     setIsEditing(true);
     setSelectedId(event.id);
 
-    // Convert Firestore Timestamp to Input Strings
     let dateStr = "";
     let timeStr = "";
 
     if (event.event_date?.toDate) {
       const d = event.event_date.toDate();
-      // Format YYYY-MM-DD
       dateStr = d.toISOString().split("T")[0];
-      // Format HH:mm
       timeStr = d.toTimeString().slice(0, 5);
     }
 
@@ -295,19 +328,24 @@ const CalendarManager = () => {
               return (
                 <div
                   key={event.id}
-                  className={`group flex flex-col sm:flex-row gap-4 bg-brand-gray/30 hover:bg-brand-gray border border-white/5 hover:border-white/10 p-4 rounded-2xl transition-all ${
-                    selectedId === event.id
-                      ? "border-brand-accent/50 bg-brand-gray"
-                      : ""
+                  className={`group flex flex-col sm:flex-row gap-4 bg-brand-gray/30 hover:bg-brand-gray border p-4 rounded-2xl transition-all ${
+                    event.is_featured
+                      ? "border-brand-accent shadow-[0_0_15px_rgba(204,255,0,0.1)] bg-brand-gray"
+                      : "border-white/5 hover:border-white/10"
                   }`}
                 >
                   {/* Image Thumb */}
-                  <div className="w-full sm:w-32 h-32 shrink-0 rounded-xl overflow-hidden bg-black">
+                  <div className="w-full sm:w-32 h-32 shrink-0 rounded-xl overflow-hidden bg-black relative">
                     <img
                       src={event.image_url}
                       alt={event.title}
                       className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                     />
+                    {event.is_featured && (
+                      <div className="absolute top-2 left-2 bg-brand-accent text-brand-dark text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase tracking-wider">
+                        Active
+                      </div>
+                    )}
                   </div>
 
                   {/* Info */}
@@ -339,6 +377,38 @@ const CalendarManager = () => {
 
                   {/* Actions */}
                   <div className="flex flex-row sm:flex-col justify-center gap-2 sm:border-l sm:border-white/10 sm:pl-4">
+                    {/* ✅ TOGGLE BUTTON */}
+                    <button
+                      onClick={() => handleSetFeatured(event)}
+                      className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                        event.is_featured
+                          ? "bg-brand-accent text-brand-dark hover:bg-white"
+                          : "bg-white/5 hover:bg-brand-accent/20 hover:text-brand-accent text-brand-muted"
+                      }`}
+                      title={
+                        event.is_featured
+                          ? "Click to Deactivate"
+                          : "Click to Activate"
+                      }
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                      <span className="sm:hidden md:inline">
+                        {event.is_featured ? "ON" : "OFF"}
+                      </span>
+                    </button>
+
                     <button
                       onClick={() => handleEdit(event)}
                       className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 text-brand-muted text-sm font-bold transition-all"

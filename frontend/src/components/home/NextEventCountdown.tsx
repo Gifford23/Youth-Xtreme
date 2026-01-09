@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 
-// --- TYPES ---
 interface TimeLeft {
   days: number;
   hours: number;
@@ -9,22 +8,14 @@ interface TimeLeft {
   seconds: number;
 }
 
-// --- HELPER: CALCULATE TIME ---
-const calculateTimeLeft = (): TimeLeft => {
-  const now = new Date();
-  const target = new Date();
+interface CountdownProps {
+  targetDate?: Date;
+  title?: string;
+}
 
-  const dayOfWeek = now.getDay();
-  const daysUntilFriday = (5 + 7 - dayOfWeek) % 7;
-
-  target.setDate(now.getDate() + daysUntilFriday);
-  target.setHours(19, 0, 0, 0);
-
-  if (target.getTime() < now.getTime()) {
-    target.setDate(target.getDate() + 7);
-  }
-
-  const difference = target.getTime() - now.getTime();
+const calculateTimeLeft = (target: number): TimeLeft => {
+  const now = new Date().getTime();
+  const difference = target - now;
 
   if (difference > 0) {
     return {
@@ -34,20 +25,47 @@ const calculateTimeLeft = (): TimeLeft => {
       seconds: Math.floor((difference / 1000) % 60),
     };
   }
-
   return { days: 0, hours: 0, minutes: 0, seconds: 0 };
 };
 
-const NextEventCountdown = () => {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft());
+const getNextFriday = (): number => {
+  const now = new Date();
+  const target = new Date();
+  const dayOfWeek = now.getDay();
+  const daysUntilFriday = (5 + 7 - dayOfWeek) % 7;
+
+  target.setDate(now.getDate() + daysUntilFriday);
+  target.setHours(19, 0, 0, 0); // 7:00 PM
+
+  if (target.getTime() < now.getTime()) {
+    target.setDate(target.getDate() + 7);
+  }
+  return target.getTime();
+};
+
+const NextEventCountdown = ({ targetDate, title }: CountdownProps) => {
+  // ✅ FIX: Convert Date object to a primitive number (timestamp)
+  // This ensures the value is stable even if the parent re-renders
+  const targetTimestamp = useMemo(() => {
+    return targetDate ? targetDate.getTime() : getNextFriday();
+  }, [targetDate]);
+
+  const displayTitle = title || "Encounter";
+
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() =>
+    calculateTimeLeft(targetTimestamp)
+  );
 
   useEffect(() => {
+    // Immediate calculation to prevent 1s delay on load
+    setTimeLeft(calculateTimeLeft(targetTimestamp));
+
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      setTimeLeft(calculateTimeLeft(targetTimestamp));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [targetTimestamp]); // ✅ Only restarts if the numeric timestamp changes
 
   const timeUnits = [
     { label: "DAYS", value: timeLeft.days },
@@ -61,24 +79,27 @@ const NextEventCountdown = () => {
       <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-        {/* Text Side */}
         <div className="text-center md:text-left">
           <h3 className="text-brand-accent font-bold tracking-[0.2em] text-sm mb-2 uppercase animate-pulse">
             Mark Your Calendar
           </h3>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-white uppercase italic leading-tight">
             Next{" "}
-            {/* ✅ FIXED: Added 'pr-2' (padding-right) to prevent clipping */}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white pr-2">
-              Encounter
+              {displayTitle}
             </span>
           </h2>
           <p className="text-brand-muted text-sm mt-2 font-mono">
-            Friday Night Live • 7:00 PM
+            {new Date(targetTimestamp).toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
         </div>
 
-        {/* Timer Side */}
         <div className="flex gap-3 md:gap-6">
           {timeUnits.map((unit, index) => (
             <motion.div
