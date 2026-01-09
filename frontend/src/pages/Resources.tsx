@@ -19,14 +19,15 @@ const Resources = () => {
   const categories = ["All", "Bible Stories", "Study Guides", "Devotionals"];
 
   return (
-    <div className="min-h-screen bg-brand-dark pt-24 pb-20 px-4">
+    // ✅ CHANGED pt-24 to pt-32 for better header spacing
+    <div className="min-h-screen bg-brand-dark pt-32 pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* HEADER SECTION */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-5xl font-display font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
             Spiritual <span className="text-brand-accent">Library</span>
           </h1>
-          <p className="text-brand-muted text-lg leading-relaxed">
+          <p className="text-brand-muted text-lg leading-relaxed max-w-2xl mx-auto">
             Dive deeper into the Word. Explore timeless stories, practical study
             guides, and devotionals designed to fuel your spiritual growth.
           </p>
@@ -42,7 +43,7 @@ const Resources = () => {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all border ${
                   activeCategory === cat
-                    ? "bg-brand-accent text-brand-dark border-brand-accent"
+                    ? "bg-brand-accent text-brand-dark border-brand-accent shadow-[0_0_15px_rgba(204,255,0,0.3)]"
                     : "bg-transparent text-brand-muted border-white/10 hover:border-white hover:text-white"
                 }`}
               >
@@ -52,16 +53,16 @@ const Resources = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="relative w-full md:w-72">
+          <div className="relative w-full md:w-72 group">
             <input
               type="text"
               placeholder="Search resources..."
-              className="w-full bg-brand-gray border border-white/10 rounded-full px-6 py-3 pl-12 text-white focus:border-brand-accent focus:outline-none transition-colors"
+              className="w-full bg-brand-gray border border-white/10 rounded-full px-6 py-3 pl-12 text-white focus:border-brand-accent focus:outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(204,255,0,0.1)]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <svg
-              className="w-5 h-5 text-gray-500 absolute left-4 top-3.5"
+              className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-brand-accent transition-colors"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -82,7 +83,7 @@ const Resources = () => {
             <Link
               to={`/resources/${resource.id}`}
               key={resource.id}
-              className="group bg-brand-gray border border-white/5 rounded-3xl overflow-hidden hover:border-brand-accent/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(204,255,0,0.1)] flex flex-col h-full"
+              className="group bg-brand-gray border border-white/5 rounded-3xl overflow-hidden hover:border-brand-accent/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col h-full"
             >
               {/* Image Container */}
               <div className="h-56 overflow-hidden relative">
@@ -91,10 +92,10 @@ const Resources = () => {
                   alt={resource.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-gray to-transparent opacity-80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-gray via-transparent to-transparent opacity-90"></div>
 
                 {/* Category Badge */}
-                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   {resource.category}
                 </div>
               </div>
@@ -144,8 +145,8 @@ const Resources = () => {
                     </svg>
                     {resource.readTime}
                   </span>
-                  <span className="text-white text-sm font-bold group-hover:translate-x-2 transition-transform">
-                    Read Story →
+                  <span className="text-white text-sm font-bold group-hover:translate-x-2 transition-transform flex items-center gap-1">
+                    Read Story <span className="text-brand-accent">→</span>
                   </span>
                 </div>
               </div>

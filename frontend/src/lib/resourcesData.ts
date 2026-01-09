@@ -108,63 +108,7 @@ export const resourcesData = [
       </div>
     `,
   },
-  {
-    id: 3,
-    title: "Betrayed But Not Broken (Joseph)", // Changed title to be more inspiring
-    category: "Bible Stories",
-    scripture: "Genesis 37-50",
-    image:
-      "https://media.swncdn.com/cms/BST/49183-Joseph_Sold_by_His_Brothers.800w.tn.jpg",
-    summary:
-      "Hated by his brothers, sold into slavery, and thrown in prison for a crime he didn't commit. A masterclass on trusting God when life isn't fair.",
-    readTime: "12 min read",
-    externalLink:
-      "https://www.biblegateway.com/passage/?search=Genesis+37&version=NIV",
-    content: `
-      <h3 class="text-brand-accent text-xl font-bold mb-2">The Sting of Rejection</h3>
-      <p>Joseph had a calling on his life, symbolized by his coat of many colors. But his own brothers—the people who were supposed to protect him—hated him for it. They stripped him of his dignity, threw him into a pit, and sold him as a slave. It is the ultimate story of pain: being hurt by the ones closest to you.</p>
-      
-      <h3>Integrity in the Shadows</h3>
-      <p>In Egypt, Joseph lost his freedom, but he never lost his character. Whether he was managing Potiphar's house or sitting in a dark prison cell for a crime he didn't commit, Joseph chose excellence. He didn't wait for the spotlight to serve God; he served faithfully in the dark, trusting that God was writing a bigger story.</p>
-      
-      <h3>The Sovereign Twist</h3>
-      <p>In a single day, God elevated Joseph from the prison to the palace, making him the second most powerful man in the world. But the true victory wasn't his promotion; it was his heart. When his starving brothers came begging for food, Joseph didn't seek revenge. He wept and forgave them, saying, "You intended to harm me, but God intended it for good."</p>
-      <div class="bg-white/10 p-6 rounded-xl border-l-4 border-brand-accent my-8">
-        <h4 class="font-bold text-white mb-2">💡 The Takeaway</h4>
-        <p class="text-sm">Your setbacks are often setups for God's plan. If you keep your heart pure and your eyes on Jesus, God can turn your deepest pain into your greatest purpose.</p>
-      </div>
-    `,
-  },
 
-  // ... [Other entries] ...
-
-  {
-    id: 14,
-    title: "The Wisest Fool (King Solomon)",
-    category: "Bible Stories",
-    scripture: "1 Kings 3-11",
-    image:
-      "https://i.pinimg.com/1200x/33/f6/2a/33f62ab329a75050846a643516dc3a41.jpg",
-    summary:
-      "He possessed everything a person could dream of—wealth, power, and divine wisdom. But his life proves that a divided heart leads to a tragic end.",
-    readTime: "7 min read",
-    externalLink:
-      "https://www.biblegateway.com/passage/?search=1+Kings+3&version=NIV",
-    content: `
-      <h3 class="text-brand-accent text-xl font-bold mb-2">The Divine Offer</h3>
-      <p>When Solomon became king, God appeared to him in a dream with a profound invitation: "Ask for whatever you want." Solomon didn't ask for riches, long life, or the death of his enemies. He humbled himself and asked for <strong>wisdom</strong> to lead God's people with justice. God was so moved by this request that He granted Solomon wisdom unlike anyone had ever known—plus the wealth and honor he didn't even ask for.</p>
-      
-      <h3>The Pinnacle of Success</h3>
-      <p>Solomon's reign was the golden age of Israel. He built the glorious Temple, wrote thousands of proverbs and songs, and his fame spread to the ends of the earth. Rulers like the Queen of Sheba traveled great distances just to witness his wisdom. He demonstrated the incredible potential of a life fully surrendered to God's gifting.</p>
-
-      <h3>The Danger of Drift</h3>
-      <p>However, Solomon's downfall wasn't a sudden crash; it was a slow drift. He failed to guard his heart. To secure political alliances, he married hundreds of foreign women who worshipped other gods. Slowly, his heart became divided. The man who built the Temple for the one true God ended up building shrines for idols to please his wives. He started with a humble prayer but finished with a compromised spirit.</p>
-      <div class="bg-white/10 p-6 rounded-xl border-l-4 border-brand-accent my-8">
-        <h4 class="font-bold text-white mb-2">💡 The Takeaway</h4>
-        <p class="text-sm">Talent and wisdom can take you to the top, but only character can keep you there. It is not enough to start well; we must finish well. Guard your heart with all diligence (Proverbs 4:23).</p>
-      </div>
-    `,
-  },
   {
     id: 5,
     title: "DMing God (How to Pray)",
@@ -392,33 +336,7 @@ export const resourcesData = [
     `,
   },
   // --- NEW REQUESTED CHARACTERS ---
-  {
-    id: 14,
-    title: "The Wisest Fool (King Solomon)",
-    category: "Bible Stories",
-    scripture: "1 Kings 3-11",
-    image:
-      "https://i.pinimg.com/1200x/33/f6/2a/33f62ab329a75050846a643516dc3a41.jpg",
-    summary:
-      "He had more money than Elon Musk and more wisdom than Einstein. But a divided heart cost him everything.",
-    readTime: "7 min read",
-    externalLink:
-      "https://www.biblegateway.com/passage/?search=1+Kings+3&version=NIV",
-    content: `
-      <h3 class="text-brand-accent text-xl font-bold mb-2">The Ultimate Blank Check</h3>
-      <p>Imagine God appearing in your dream and dropping the ultimate offer: "Ask for whatever you want." Most of us would ask for a billion dollars, fame, or superpowers. Solomon? He asked for the software upgrade. He wanted <strong>wisdom</strong> to lead people well. God was so impressed that He gave Solomon the wisdom <em>plus</em> the billionaire lifestyle he didn't even ask for.</p>
-      
-      <h3>The Influencer Lifestyle</h3>
-      <p>Solomon became the world's first global celebrity. Queens traveled across continents just to hear him speak. He built the Temple (gold everywhere), studied botany, wrote music, and understood human psychology perfectly. He was the peak of human potential.</p>
 
-      <h3>The Slow Fade</h3>
-      <p>But Solomon had a fatal flaw: He couldn't say "no" to compromise. He thought he could handle it. He married hundreds of foreign women for political alliances (and lust). Slowly, "just one idol" became a thousand. The man who built God's house ended up building altars to false gods just to please his wives. He started with a humble prayer and ended with a divided heart.</p>
-      <div class="bg-white/10 p-6 rounded-xl border-l-4 border-brand-accent my-8">
-        <h4 class="font-bold text-white mb-2">💡 The Takeaway</h4>
-        <p class="text-sm">Talent gets you to the top, but character keeps you there. It's not about how you start; it's about how you finish. Guard your heart above all else.</p>
-      </div>
-    `,
-  },
   {
     id: 15,
     title: "Strong Body, Weak Will (Samson)",
