@@ -108,43 +108,65 @@ const CampusGallery = ({
   items: MediaItem[];
   onSelect: (item: MediaItem) => void;
 }) => {
+  const getYouTubeId = (url: string): string | null => {
+    if (!url) return null;
+    const regExp =
+      /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[7].length === 11 ? match[7] : null;
+  };
+
   return (
     <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-      {items.map((item) => (
-        <div
-          key={item.id}
-          onClick={() => onSelect(item)}
-          className="break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer bg-brand-gray/20 border border-white/5"
-        >
-          {item.type === "video" ? (
-            <div className="relative">
-              <video
-                src={item.url}
-                className="w-full h-auto object-cover opacity-90"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black/50 rounded-full p-2 backdrop-blur-sm border border-white/20">
-                  ▶️
+      {items.map((item) => {
+        // Detect if it's a YouTube video
+        const ytId = item.type === "video" ? getYouTubeId(item.url) : null;
+
+        return (
+          <div
+            key={item.id}
+            onClick={() => onSelect(item)}
+            className="break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer bg-brand-gray/20 border border-white/5"
+          >
+            {item.type === "video" ? (
+              <div className="relative">
+                {/* ✅ Use YouTube Thumbnail if ID exists, otherwise fallback to video tag */}
+                {ytId ? (
+                  <img
+                    src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                    className="w-full h-auto object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
+                    alt="Video Preview"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-auto object-cover opacity-90"
+                  />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/50 rounded-full p-2 backdrop-blur-sm border border-white/20">
+                    ▶️
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <img
-              src={item.url}
-              className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-            />
-          )}
+            ) : (
+              <img
+                src={item.url}
+                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+            )}
 
-          {/* Hover Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-            <p className="text-white text-xs font-bold line-clamp-2">
-              {item.event_name}
-            </p>
-            <p className="text-[10px] text-brand-accent">{item.date}</p>
+            {/* Hover Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+              <p className="text-white text-xs font-bold line-clamp-2">
+                {item.event_name}
+              </p>
+              <p className="text-[10px] text-brand-accent">{item.date}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
