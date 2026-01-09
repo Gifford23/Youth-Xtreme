@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import {
   collection,
   query,
@@ -10,70 +11,106 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
+
 import { onAuthStateChanged } from "firebase/auth";
+
 import { db, auth } from "../lib/firebase";
+
 import { Link } from "react-router-dom";
+
 import { motion } from "framer-motion";
 
 // Components
+
 import EventCard from "../components/events/EventCard";
+
 import Mission from "../components/home/Mission";
+
 import Testimonials from "../components/home/Testimonials";
+
 import CallToAction from "../components/home/CallToAction";
+
 import VerseOfTheDay from "../components/home/VerseOfTheDay";
 
 // --- TYPES ---
+
 interface AppEvent {
   id: string;
+
   title: string;
+
   event_date: any;
+
   location: string;
+
   category: string;
+
   image_url: string;
 }
 
 interface MediaItem {
   id: string;
+
   type: "photo" | "video";
+
   url: string;
+
   thumbnail?: string;
+
   caption: string;
+
   event_name: string;
+
   date: string;
+
   featured: boolean;
+
   created_at: any;
 }
 
 // --- HELPER: Custom Typewriter Hook ---
+
 const useTypewriter = (
   words: string[],
+
   speed = 150,
+
   deleteSpeed = 100,
+
   pause = 2000
 ) => {
   const [index, setIndex] = useState(0);
+
   const [subIndex, setSubIndex] = useState(0);
+
   const [reverse, setReverse] = useState(false);
+
   const [blink, setBlink] = useState(true);
 
   // Blinking cursor effect
+
   useEffect(() => {
     const timeout2 = setTimeout(() => {
       setBlink((prev) => !prev);
     }, 500);
+
     return () => clearTimeout(timeout2);
   }, [blink]);
 
   // Typing logic
+
   useEffect(() => {
     if (subIndex === words[index].length + 1 && !reverse) {
       setTimeout(() => setReverse(true), pause);
+
       return;
     }
 
     if (subIndex === 0 && reverse) {
       setReverse(false);
+
       setIndex((prev) => (prev + 1) % words.length);
+
       return;
     }
 
@@ -81,6 +118,7 @@ const useTypewriter = (
       () => {
         setSubIndex((prev) => prev + (reverse ? -1 : 1));
       },
+
       reverse ? deleteSpeed : speed
     );
 
@@ -91,18 +129,24 @@ const useTypewriter = (
 };
 
 // --- HELPER: YouTube ID Extractor ---
+
 const getYouTubeId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+
   const match = url.match(regExp);
+
   return match && match[2].length === 11 ? match[2] : null;
 };
 
 // --- COMPONENT: Scroll Reveal Wrapper ---
+
 const ScrollReveal = ({
   children,
+
   delay = 0,
 }: {
   children: React.ReactNode;
+
   delay?: number;
 }) => (
   <motion.div
@@ -116,9 +160,11 @@ const ScrollReveal = ({
 );
 
 // --- COMPONENT: ENHANCED INFINITE MARQUEE ---
+
 const InfiniteMarquee = () => (
   <div className="relative w-full overflow-hidden border-y border-white/10 bg-brand-dark/50 backdrop-blur-md py-4 z-20">
     <div className="absolute inset-0 bg-brand-accent/5"></div>
+
     <motion.div
       className="flex gap-12 whitespace-nowrap"
       animate={{ x: [0, -1000] }}
@@ -129,9 +175,11 @@ const InfiniteMarquee = () => (
           <span className="text-2xl font-display font-bold uppercase tracking-widest text-transparent stroke-text">
             Youth Xtreme
           </span>
+
           <span className="text-2xl font-display font-bold uppercase tracking-widest text-brand-accent">
             Come sit with us
           </span>
+
           <span className="text-2xl font-display font-bold uppercase tracking-widest text-white">
             Bring His Life to the Next Generation
           </span>
@@ -140,46 +188,65 @@ const InfiniteMarquee = () => (
     </motion.div>
 
     {/* CSS for Outline Text effect */}
+
     <style>{`
+
       .stroke-text {
+
         -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+
       }
+
     `}</style>
   </div>
 );
 
 // ✅ OPTIMIZATION: Defined outside component to prevent re-renders
+
 const TYPEWRITER_WORDS = ["FAMILY", "ONE", "CHOSEN", "THE LIGHT", "RELENTLESS"];
 
 const Home = () => {
   const [events, setEvents] = useState<AppEvent[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [featuredMedia, setFeaturedMedia] = useState<MediaItem | null>(null);
 
   // Auth State
+
   const [user, setUser] = useState<any>(null);
+
   const [userData, setUserData] = useState<any>(null);
 
   // ✅ UPDATED TYPEWRITER WORDS
+
   const { text, blink } = useTypewriter(
     TYPEWRITER_WORDS,
+
     150, // Typing speed
+
     100, // Deleting speed
+
     2000 // Pause duration
   );
 
   useEffect(() => {
     if (!db) {
       setLoading(false);
+
       return;
     }
 
     // 1. Listen for Auth Changes
+
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
       if (currentUser) {
         const docRef = doc(db, "users", currentUser.uid);
+
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
           setUserData(docSnap.data());
         }
@@ -189,38 +256,52 @@ const Home = () => {
     });
 
     // 2. Fetch Events
+
     const eventsQuery = query(
       collection(db, "events"),
+
       orderBy("event_date", "asc"),
+
       limit(3)
     );
+
     const eventsUnsubscribe = onSnapshot(eventsQuery, (querySnapshot) => {
       const eventsData = querySnapshot.docs.map(
         (doc: QueryDocumentSnapshot<DocumentData>) => ({
           id: doc.id,
+
           ...doc.data(),
         })
       ) as AppEvent[];
+
       setEvents(eventsData);
+
       setLoading(false);
     });
 
     // 3. Fetch Media
+
     const mediaQuery = query(
       collection(db, "media"),
+
       orderBy("created_at", "desc"),
+
       limit(1)
     );
+
     const mediaUnsubscribe = onSnapshot(mediaQuery, (snap) => {
       const mediaData = snap.docs.map(
         (d) => ({ id: d.id, ...d.data() } as MediaItem)
       );
+
       setFeaturedMedia(mediaData[0] || null);
     });
 
     return () => {
       unsubAuth();
+
       eventsUnsubscribe();
+
       mediaUnsubscribe();
     };
   }, []);
@@ -231,23 +312,30 @@ const Home = () => {
   return (
     <div className="relative isolate min-h-screen bg-brand-dark overflow-x-hidden">
       {/* 🎬 HERO SECTION */}
+
       <div className="relative min-h-screen w-full overflow-hidden flex items-center">
         {/* Background Image */}
+
         <div className="absolute inset-0">
           <img
             src="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
             alt="Youth Xtreme Hero"
             className="h-full w-full object-cover"
           />
+
           {/* Overlays */}
+
           <div className="absolute inset-0 bg-brand-dark/60 mix-blend-multiply"></div>
+
           <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/90 via-brand-dark/40 to-transparent"></div>
         </div>
 
         {/* Content Container (Grid) */}
+
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 py-24 lg:py-0">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* LEFT: Hero Text */}
+
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -260,6 +348,7 @@ const Home = () => {
               </div>
 
               {/* ✅ DYNAMIC HEADLINE */}
+
               <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white uppercase drop-shadow-2xl mb-6 leading-tight">
                 WE ARE... <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
@@ -286,6 +375,7 @@ const Home = () => {
                 >
                   Join the Movement
                 </Link>
+
                 <Link
                   to="/connect"
                   className="w-full sm:w-auto rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-bold text-white hover:bg-white/10 transition-all text-center backdrop-blur-sm uppercase tracking-wide"
@@ -296,6 +386,7 @@ const Home = () => {
             </motion.div>
 
             {/* RIGHT: Verse Card (Restored) */}
+
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -308,6 +399,7 @@ const Home = () => {
         </div>
 
         {/* Scroll Arrow */}
+
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden lg:block text-brand-muted">
           <svg
             className="w-6 h-6"
@@ -326,16 +418,20 @@ const Home = () => {
       </div>
 
       {/* ⚡ NEW ENHANCED MARQUEE (Sticky & Modern) */}
+
       <InfiniteMarquee />
 
       {/* 🔥 MISSION SECTION */}
+
       <ScrollReveal>
         <Mission />
       </ScrollReveal>
 
       {/* 📅 EVENTS SECTION */}
+
       <div className="bg-brand-dark py-24 relative z-10">
         {/* Background Glow */}
+
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-brand-gray/30 to-transparent pointer-events-none"></div>
 
         <div className="mx-auto max-w-7xl px-6 lg:px-8 relative">
@@ -344,10 +440,12 @@ const Home = () => {
               <div className="max-w-2xl">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="w-10 h-1 bg-brand-accent"></span>
+
                   <span className="text-brand-accent font-bold uppercase tracking-widest text-sm">
                     Don't Miss Out
                   </span>
                 </div>
+
                 <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl font-display uppercase">
                   Upcoming{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
@@ -355,6 +453,7 @@ const Home = () => {
                   </span>
                 </h2>
               </div>
+
               <Link
                 to="/events"
                 className="hidden md:inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 hover:border-brand-accent text-sm font-bold text-white hover:text-brand-accent transition-all hover:bg-white/5"
@@ -403,8 +502,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-
-      {/* 🎥 WEEKLY HIGHLIGHT (Immersive) */}
+      {/* --- SECTION 6: MEDIA HIGHLIGHT --- */}
       {featuredMedia && (
         <div className="relative py-32 bg-black overflow-hidden">
           <div className="absolute inset-0 opacity-20">
@@ -474,13 +572,11 @@ const Home = () => {
           </div>
         </div>
       )}
-
-      {/* 💬 TESTIMONIALS */}
+      {/* --- SECTION 7: TESTIMONIALS --- */}
       <ScrollReveal>
         <Testimonials />
       </ScrollReveal>
-
-      {/* 🚀 CALL TO ACTION */}
+      {/* --- SECTION 8: CALL TO ACTION --- */}
       <CallToAction />
     </div>
   );

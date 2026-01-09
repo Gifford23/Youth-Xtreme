@@ -59,6 +59,7 @@ const Navbar = () => {
     ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []),
     { name: "Resources", path: "/resources" },
     { name: "Media", path: "/media" },
+    { name: "I'm New", path: "/faq" }, // ✅ Added FAQ Link
   ];
 
   const isActive = (path: string) => location.pathname === path;
