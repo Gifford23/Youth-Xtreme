@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -13,10 +13,10 @@ import Logo from "../assets/Official-logo.png";
 
 // 📸 BACKGROUND IMAGES LIST
 const backgroundImages = [
-  "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop", // First Image
-  "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/548220661_1093330282877553_682378857481286695_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PZHkG5oFXm0Q7kNvwHAEBIQ&_nc_oc=AdnK2mxb7yuTNMyiEXDiPEGNA-jBiPeUiVVVzsjIZkGJEkyOo8eFTZpbzjSw1fO3idI&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=4kc4-8tLvpA4p6DvxuMfKQ&oh=00_AfqRH4KmkVFdZ3gvD7SC8yr4IbE0CpTf1cgiiJpsuu_XWQ&oe=696181AF", // Second Image
-  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/548403682_1093330362877545_845517022796782631_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=sZL-v7qkg2oQ7kNvwGH4vwg&_nc_oc=AdkIiBSDYBPjz_iN8TOWLzRR5K3-PimYkjUcwCZODrX27tAnfCK_lHNZ_LeMwtK4nFg&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=OlzyATU_d5ciyrdt3EvR7A&oh=00_Afo4mvc0OqqEru2bY4Jn2gvbq2Wvd6dxqZuRwUD3KLwdeQ&oe=696193CE", // Third Image
-  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/517952902_1039160238294558_8204969679638417153_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PIe29dJbHU0Q7kNvwEfGxGQ&_nc_oc=AdnqK8aINpdWgM0q5K5CJ86vRoGjYdAQEqzvQTM6Z5k9VpYdtea4uICGLTZEGVBBb9o&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=y-Tjtbh3Du4ia-YtAL2q-w&oh=00_AfpNavhC13QMAB2GmMOenDG1F_GxXSqUuEDgElDavDTbXg&oe=6961A985", // Fourth Image
+  "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop",
+  "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/548220661_1093330282877553_682378857481286695_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PZHkG5oFXm0Q7kNvwHAEBIQ&_nc_oc=AdnK2mxb7yuTNMyiEXDiPEGNA-jBiPeUiVVVzsjIZkGJEkyOo8eFTZpbzjSw1fO3idI&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=4kc4-8tLvpA4p6DvxuMfKQ&oh=00_AfqRH4KmkVFdZ3gvD7SC8yr4IbE0CpTf1cgiiJpsuu_XWQ&oe=696181AF",
+  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/548403682_1093330362877545_845517022796782631_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=sZL-v7qkg2oQ7kNvwGH4vwg&_nc_oc=AdkIiBSDYBPjz_iN8TOWLzRR5K3-PimYkjUcwCZODrX27tAnfCK_lHNZ_LeMwtK4nFg&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=OlzyATU_d5ciyrdt3EvR7A&oh=00_Afo4mvc0OqqEru2bY4Jn2gvbq2Wvd6dxqZuRwUD3KLwdeQ&oe=696193CE",
+  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/517952902_1039160238294558_8204969679638417153_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PIe29dJbHU0Q7kNvwEfGxGQ&_nc_oc=AdnqK8aINpdWgM0q5K5CJ86vRoGjYdAQEqzvQTM6Z5k9VpYdtea4uICGLTZEGVBBb9o&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=y-Tjtbh3Du4ia-YtAL2q-w&oh=00_AfpNavhC13QMAB2GmMOenDG1F_GxXSqUuEDgElDavDTbXg&oe=6961A985",
 ];
 
 const Login = () => {
@@ -24,7 +24,7 @@ const Login = () => {
 
   // Toggle State
   const [isSignUp, setIsSignUp] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // 🔄 Track Active Image
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Form Fields
   const [name, setName] = useState("");
@@ -40,7 +40,7 @@ const Login = () => {
       setCurrentImageIndex((prevIndex) =>
         prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
       );
-    }, 30000); // 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -56,7 +56,7 @@ const Login = () => {
     if (userDoc.exists()) {
       const userData = userDoc.data();
 
-      // ✅ FIX 1: Force Admin Role if email matches (even if DB says "youth")
+      // Force Admin Role if email matches
       if (user.email === ADMIN_EMAIL && userData.role !== "admin") {
         await setDoc(
           userDocRef,
@@ -74,18 +74,17 @@ const Login = () => {
         navigate("/");
       }
     } else {
-      // ✅ FIX 2: When creating a NEW user, check if it's the admin email
+      // Create NEW user
       const isAdmin = user.email === ADMIN_EMAIL;
 
       await setDoc(userDocRef, {
         email: user.email,
-        role: isAdmin ? "admin" : "youth", // Auto-assign admin if email matches
+        role: isAdmin ? "admin" : "youth",
         created_at: serverTimestamp(),
         name: user.displayName || name || "Youth Member",
         photo_url: user.photoURL || "",
       });
 
-      // Redirect based on the role we just assigned
       if (isAdmin) {
         navigate("/admin");
       } else {
@@ -147,7 +146,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-brand-dark">
+    // ✅ Added 'relative' here so the absolute link positions correctly
+    <div className="min-h-screen flex bg-brand-dark relative">
       {/* Visuals - Dynamic Slideshow */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-black">
         <div className="absolute inset-0 bg-brand-accent/10 z-20"></div>
@@ -310,6 +310,28 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ NEW ABSOLUTE POSITIONED LINK */}
+      <Link
+        to="/"
+        className="absolute bottom-8 left-8 z-50 inline-flex items-center gap-2 text-brand-muted hover:text-brand-accent transition-colors text-sm font-bold uppercase tracking-wider"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-5 h-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+          />
+        </svg>
+        Back to Home
+      </Link>
     </div>
   );
 };
