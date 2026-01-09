@@ -104,7 +104,7 @@ const Moments = () => {
               {/* Caption */}
               <div className="absolute bottom-4 left-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
                 <span className="text-brand-accent text-xs font-bold uppercase tracking-wider mb-1 block">
-                  #YouthXtreme
+                  #YouthXtreme Cdo
                 </span>
                 <p className="text-white font-bold text-lg">{moment.caption}</p>
               </div>
