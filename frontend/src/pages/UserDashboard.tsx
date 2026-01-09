@@ -194,7 +194,29 @@ const UserDashboard = () => {
               <span className="sm:hidden">Scan</span>
             </Link>
 
-            {/* 2. MEMBER BUTTON (Show Pass) */}
+            {/* ✅ 2. NEW: INVITE GENERATOR BUTTON */}
+            <Link
+              to="/invite"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-brand-accent/30 text-brand-accent font-bold px-6 py-3 rounded-xl transition-all"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                />
+              </svg>
+              <span className="hidden sm:inline">Invite Friend</span>
+              <span className="sm:hidden">Invite</span>
+            </Link>
+
+            {/* 3. MEMBER BUTTON (Show Pass) */}
             <button
               onClick={() => setShowQrModal(true)}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all"
@@ -221,7 +243,7 @@ const UserDashboard = () => {
           {/* LEFT COLUMN: Profile Card (Preview) */}
           <div className="lg:col-span-1">
             <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl sticky top-32 text-center relative overflow-hidden">
-              {/* ✅ NEW: VOLUNTEER BADGE (CONDITIONAL) */}
+              {/* VOLUNTEER BADGE (CONDITIONAL) */}
               {isVolunteer && (
                 <div className="absolute top-0 right-0 p-4 animate-fade-in-down">
                   <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg shadow-yellow-500/20 flex items-center gap-1">
@@ -263,7 +285,6 @@ const UserDashboard = () => {
                 {name || "Your Name"}
               </h2>
 
-              {/* ✅ UPDATED: Change Text based on Role */}
               <p
                 className={`font-bold text-sm mb-6 uppercase tracking-wider ${
                   isVolunteer ? "text-brand-accent" : "text-brand-muted"

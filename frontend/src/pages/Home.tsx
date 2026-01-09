@@ -27,6 +27,7 @@ import Testimonials from "../components/home/Testimonials";
 import CallToAction from "../components/home/CallToAction";
 import VerseOfTheDay from "../components/home/VerseOfTheDay";
 import NextEventCountdown from "../components/home/NextEventCountdown";
+import Moments from "../components/home/Moments"; // ✅ ADDED MOMENTS COMPONENT
 
 // --- TYPES ---
 interface AppEvent {
@@ -36,7 +37,7 @@ interface AppEvent {
   location: string;
   category: string;
   image_url: string;
-  is_featured?: boolean; // Added for type safety
+  is_featured?: boolean;
 }
 
 interface MediaItem {
@@ -153,7 +154,7 @@ const TYPEWRITER_WORDS = ["FAMILY", "ONE", "CHOSEN", "THE LIGHT", "RELENTLESS"];
 const Home = () => {
   // --- STATE ---
   const [events, setEvents] = useState<AppEvent[]>([]);
-  const [featuredEvent, setFeaturedEvent] = useState<AppEvent | null>(null); // ✅ Store the single featured event
+  const [featuredEvent, setFeaturedEvent] = useState<AppEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [featuredMedia, setFeaturedMedia] = useState<MediaItem | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -180,7 +181,7 @@ const Home = () => {
       }
     });
 
-    // 2. Fetch Events (Top 3 UPCOMING Events for List)
+    // 2. Fetch Events (Top 3 UPCOMING)
     const today = new Date();
     const eventsQuery = query(
       collection(db, "events"),
@@ -199,8 +200,7 @@ const Home = () => {
       setLoading(false);
     });
 
-    // 3. ✅ Fetch FEATURED Event (For Countdown)
-    // Only grab events marked as is_featured: true
+    // 3. Fetch FEATURED Event (For Countdown)
     const featuredQuery = query(
       collection(db, "events"),
       where("is_featured", "==", true),
@@ -211,7 +211,7 @@ const Home = () => {
         const doc = querySnapshot.docs[0];
         setFeaturedEvent({ id: doc.id, ...doc.data() } as AppEvent);
       } else {
-        setFeaturedEvent(null); // No featured event = Hide countdown
+        setFeaturedEvent(null);
       }
     });
 
@@ -231,7 +231,7 @@ const Home = () => {
     return () => {
       unsubAuth();
       eventsUnsubscribe();
-      featuredUnsubscribe(); // Cleanup featured listener
+      featuredUnsubscribe();
       mediaUnsubscribe();
     };
   }, []);
@@ -336,7 +336,6 @@ const Home = () => {
       {/* ---------------------------------- */}
       <InfiniteMarquee />
 
-      {/* ✅ Logic Applied: Only render if 'featuredEvent' exists */}
       {featuredEvent && (
         <NextEventCountdown
           targetDate={featuredEvent.event_date?.toDate()}
@@ -501,6 +500,9 @@ const Home = () => {
       <ScrollReveal>
         <Testimonials />
       </ScrollReveal>
+
+      {/* ✅ NEW: MOMENTS SECTION */}
+      <Moments />
 
       {/* ---------------------------------- */}
       {/* SECTION 8: CALL TO ACTION */}

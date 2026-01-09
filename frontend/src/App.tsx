@@ -32,6 +32,8 @@ import Media from "./pages/Media";
 import Journey from "./pages/Journey";
 import LeadershipPath from "./pages/LeadershipPath";
 import UserDashboard from "./pages/UserDashboard";
+import InviteGenerator from "./pages/InviteGenerator";
+import Dashboard from "./pages/Dashboard";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -157,6 +159,8 @@ const AnimatedRoutes = () => {
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
             <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/invite" element={<InviteGenerator />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
 
           {/* GROUP B: Standalone Routes */}
