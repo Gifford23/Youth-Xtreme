@@ -10,6 +10,36 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
 
+const getVideoData = (url: string) => {
+  if (!url) return { type: "none" };
+
+  // YouTube Detection
+  const ytRegExp =
+    /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const ytMatch = url.match(ytRegExp);
+  if (ytMatch && ytMatch[7].length === 11) {
+    return {
+      type: "youtube",
+      id: ytMatch[7],
+      embedUrl: `https://www.youtube.com/embed/${ytMatch[7]}?autoplay=1`,
+      thumbnail: `https://img.youtube.com/vi/${ytMatch[7]}/mqdefault.jpg`,
+    };
+  }
+
+  // Facebook Detection
+  if (url.includes("facebook.com")) {
+    return {
+      type: "facebook",
+      embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(
+        url
+      )}&show_text=0&autoplay=1`,
+      thumbnail: null, // Facebook doesn't provide a direct thumbnail URL
+    };
+  }
+
+  return { type: "direct", url: url };
+};
+
 // ✅ CONFIGURATION: Campus Identities with LOGOS
 const CAMPUSES = [
   {
@@ -80,9 +110,27 @@ const MomentsBar = ({
           className="flex flex-col items-center gap-2 cursor-pointer group min-w-[70px]"
         >
           <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-brand-accent to-blue-500">
+            {/* --- ADD/REPLACE THIS BLOCK --- */}
             <div className="w-full h-full rounded-full border-2 border-brand-dark overflow-hidden relative">
               {item.type === "video" ? (
-                <video src={item.url} className="w-full h-full object-cover" />
+                (() => {
+                  const video = getVideoData(item.url);
+                  return video.type === "youtube" ? (
+                    <img
+                      src={video.thumbnail}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : video.type === "facebook" ? (
+                    <div className="w-full h-full bg-blue-900 flex items-center justify-center text-[8px] text-white">
+                      FB
+                    </div>
+                  ) : (
+                    <video
+                      src={item.url}
+                      className="w-full h-full object-cover"
+                    />
+                  );
+                })()
               ) : (
                 <img
                   src={item.url}
@@ -90,6 +138,7 @@ const MomentsBar = ({
                 />
               )}
             </div>
+            {/* ------------------------------ */}
           </div>
           <span className="text-[10px] text-white truncate w-16 text-center font-bold">
             {item.event_name.split(" ")[0]}
@@ -108,18 +157,18 @@ const CampusGallery = ({
   items: MediaItem[];
   onSelect: (item: MediaItem) => void;
 }) => {
-  const getYouTubeId = (url: string): string | null => {
+  function getYouTubeId(url: string): string | null {
     if (!url) return null;
     const regExp =
       /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[7].length === 11 ? match[7] : null;
-  };
+  }
 
   return (
     <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
       {items.map((item) => {
-        // Detect if it's a YouTube video
+        // 1. Get the YouTube ID if it exists
         const ytId = item.type === "video" ? getYouTubeId(item.url) : null;
 
         return (
@@ -130,19 +179,27 @@ const CampusGallery = ({
           >
             {item.type === "video" ? (
               <div className="relative">
-                {/* ✅ Use YouTube Thumbnail if ID exists, otherwise fallback to video tag */}
+                {/* --- ADD YOUR NEW LOGIC HERE --- */}
                 {ytId ? (
                   <img
                     src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
-                    className="w-full h-auto object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
-                    alt="Video Preview"
+                    className="w-full h-auto object-cover"
+                    alt="YouTube Preview"
                   />
+                ) : item.url.includes("facebook.com") ? (
+                  <div className="w-full aspect-video bg-blue-900 flex items-center justify-center">
+                    <span className="text-white font-bold text-[10px]">
+                      Facebook Video
+                    </span>
+                  </div>
                 ) : (
                   <video
                     src={item.url}
-                    className="w-full h-auto object-cover opacity-90"
+                    className="w-full h-auto object-cover"
                   />
                 )}
+                {/* -------------------------------- */}
+
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="bg-black/50 rounded-full p-2 backdrop-blur-sm border border-white/20">
                     ▶️
@@ -170,7 +227,6 @@ const CampusGallery = ({
     </div>
   );
 };
-
 // --- SUB-COMPONENT: UPDATES (Sidebar News) ---
 const CampusUpdates = ({ items }: { items: MediaItem[] }) => {
   const newsItems = items
@@ -561,25 +617,47 @@ const Media = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Media Container in Lightbox */}
+            {/* Media Container in Lightbox (Media.tsx) */}
             <div className="flex-1 bg-black flex items-center justify-center relative min-h-[50vh]">
               {selectedItem.type === "video" ? (
-                getYouTubeId(selectedItem.url) ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${getYouTubeId(
-                      selectedItem.url
-                    )}?autoplay=1`}
-                    className="w-full h-full min-h-[450px]"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  />
-                ) : (
-                  <video
-                    src={selectedItem.url}
-                    controls
-                    autoPlay
-                    className="max-w-full max-h-[85vh]"
-                  />
-                )
+                (() => {
+                  // YouTube Check
+                  const ytId = getYouTubeId(selectedItem.url);
+                  if (ytId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                        className="w-full h-full min-h-[450px]"
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                      />
+                    );
+                  }
+
+                  // Facebook Check
+                  if (selectedItem.url.includes("facebook.com")) {
+                    return (
+                      <iframe
+                        src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(
+                          selectedItem.url
+                        )}&show_text=0&autoplay=1`}
+                        className="w-full h-full min-h-[450px]"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    );
+                  }
+
+                  // Default Video Tag (for .mp4 files)
+                  return (
+                    <video
+                      src={selectedItem.url}
+                      controls
+                      autoPlay
+                      className="max-w-full max-h-[85vh]"
+                    />
+                  );
+                })()
               ) : (
                 <img
                   src={selectedItem.url}
