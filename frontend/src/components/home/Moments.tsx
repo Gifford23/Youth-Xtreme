@@ -61,7 +61,7 @@ const Moments = () => {
           </div>
           <h2 className="text-4xl md:text-4xl font-display font-bold text-white">
             Last Event Was{" "}
-            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
+            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white pr-2">
               Memorable
             </span>
           </h2>
