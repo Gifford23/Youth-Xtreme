@@ -1,17 +1,24 @@
-import React, { useEffect, useState } from "react"; // ✅ Added React import
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
+import { AnimatePresence } from "framer-motion";
 
 // Components
 import Navbar from "./components/layout/Navbar";
 import AdminLayout from "./components/layout/AdminLayout";
+import Footer from "./components/layout/Footer";
+import PageLoader from "./components/layout/PageLoader"; // ✅ Stylish Loader
+import ScrollToTop from "./components/utils/ScrollToTop";
+
+// Pages
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Login from "./pages/Login";
@@ -36,7 +43,6 @@ import LogoIcon from "./assets/logo-icon.png";
 import ScannerPage from "./pages/Scanner";
 import ActivityLog from "./pages/admin/ActivityLog";
 import TestimonialManager from "./pages/admin/TestimonialManager";
-import Footer from "./components/layout/Footer"; // ✅ Imported Footer
 
 // --- FLOATING MESSENGER COMPONENT ---
 const FloatingMessenger = () => (
@@ -58,13 +64,12 @@ const FloatingMessenger = () => (
   </a>
 );
 
-// 1. Public Layout (✅ Updated with Footer)
+// 1. Public Layout
 const PublicLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      {/* flex-grow pushes the footer to the bottom if content is short */}
-      <main className="flex-grow">
+      <main className="flex-grow flex flex-col">
         <Outlet />
       </main>
       <Footer />
@@ -74,13 +79,11 @@ const PublicLayout = () => {
 };
 
 // 2. Protected Admin Route
-// ✅ FIX: Changed JSX.Element to React.ReactNode
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ FIX: Removed '!auth' check to satisfy strict type checking if auth is guaranteed
     if (!auth) {
       setLoading(false);
       return;
@@ -98,15 +101,41 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>; // Wrap children in fragment
+  return <>{children}</>;
 };
 
-function App() {
+// 3. Animated Routes with Conditional Loader Logic
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // ✅ Define which paths trigger the loader
+    const triggerPaths = ["/login", "/connect"];
+    const isAdminPath = location.pathname.startsWith("/admin");
+
+    // ✅ Only show loader if path matches criteria
+    if (triggerPaths.includes(location.pathname) || isAdminPath) {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000); // 1 second loader for dramatic effect
+      return () => clearTimeout(timer);
+    } else {
+      // For other pages (Home, Events, etc.), ensure loader is off
+      setIsLoading(false);
+    }
+  }, [location.pathname]);
+
   return (
-    <Router>
-      <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
-        <Routes>
-          {/* Group A: Public Routes (With Navbar & Footer) */}
+    <AnimatePresence mode="wait">
+      {isLoading ? (
+        // ✅ Show New Stylish Loader
+        <PageLoader key="loader" />
+      ) : (
+        // ✅ Show Page Content
+        <Routes location={location} key={location.pathname}>
+          {/* Group A: Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
@@ -122,12 +151,10 @@ function App() {
             <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 
-          {/* Group B: Standalone Routes (No Navbar/Footer) */}
+          {/* Group B: Standalone Routes */}
           <Route path="/login" element={<Login />} />
 
-          {/* Group C: Admin Routes (Protected) */}
-
-          {/* 1. Main Dashboard */}
+          {/* Group C: Admin Routes */}
           <Route
             path="/admin"
             element={
@@ -138,8 +165,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 2. Members */}
           <Route
             path="/admin/members"
             element={
@@ -150,8 +175,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 3. Media Manager */}
           <Route
             path="/admin/media"
             element={
@@ -162,8 +185,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 4. Connect Cards */}
           <Route
             path="/admin/connect"
             element={
@@ -174,8 +195,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 5. Calendar Manager */}
           <Route
             path="/admin/calendar"
             element={
@@ -186,8 +205,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 6. RSVP Manager */}
           <Route
             path="/admin/rsvps"
             element={
@@ -198,8 +215,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 7. Prayer Manager */}
           <Route
             path="/admin/prayer"
             element={
@@ -210,8 +225,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 8. Activity Logs */}
           <Route
             path="/admin/logs"
             element={
@@ -222,8 +235,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 9. TESTIMONIAL MANAGER */}
           <Route
             path="/admin/testimonials"
             element={
@@ -234,8 +245,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* Scanner Route */}
           <Route
             path="/scanner"
             element={
@@ -245,6 +254,17 @@ function App() {
             }
           />
         </Routes>
+      )}
+    </AnimatePresence>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
+        <ScrollToTop />
+        <AnimatedRoutes />
       </div>
     </Router>
   );
