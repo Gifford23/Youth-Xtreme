@@ -56,13 +56,13 @@ const Moments = () => {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             <span className="text-brand-accent font-bold uppercase tracking-widest text-xs">
-              Caught on Action
+              Moments Captured
             </span>
           </div>
-          <h2 className="text-4xl md:text-4xl font-display font-bold text-white">
-            Last Event Was{" "}
-            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white pr-2">
-              Memorable
+          <h2 className="text-3xl font-sans font-bold text-white uppercase tracking-widest">
+            Relive the{" "}
+            <span className="italic font-medium opacity-90 pr-2">
+              Experience
             </span>
           </h2>
         </div>
