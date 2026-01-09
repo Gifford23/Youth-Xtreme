@@ -12,16 +12,15 @@ import { auth } from "./lib/firebase";
 import { AnimatePresence } from "framer-motion";
 
 // --- COMPONENT IMPORTS ---
-// Layout Components
 import Navbar from "./components/layout/Navbar";
 import AdminLayout from "./components/layout/AdminLayout";
 import Footer from "./components/layout/Footer";
-import PageLoader from "./components/layout/PageLoader"; // ✅ Custom Quantum Loader
-import ScrollToTop from "./components/utils/ScrollToTop"; // ✅ Resets scroll on nav
+import PageLoader from "./components/layout/PageLoader";
+import ScrollToTop from "./components/utils/ScrollToTop";
 
 // Public Pages
 import Home from "./pages/Home";
-import FaqPage from "./pages/FaqPage"; // ✅ FAQ / I'm New Page
+import FaqPage from "./pages/FaqPage";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Calendar from "./pages/Calendar";
@@ -53,7 +52,6 @@ import ScannerPage from "./pages/Scanner";
 import LogoIcon from "./assets/logo-icon.png";
 
 // --- FLOATING MESSENGER COMPONENT ---
-// Displays a fixed button to connect via Messenger
 const FloatingMessenger = () => (
   <a
     href="https://m.me/yxcdo"
@@ -74,14 +72,10 @@ const FloatingMessenger = () => (
 );
 
 // --- LAYOUT WRAPPERS ---
-
-// 1. Public Layout
-// Wraps public pages with the Navbar, Footer, and Floating Messenger
 const PublicLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      {/* flex-grow pushes footer to bottom if content is short */}
       <main className="flex-grow flex flex-col">
         <Outlet />
       </main>
@@ -91,8 +85,6 @@ const PublicLayout = () => {
   );
 };
 
-// 2. Protected Route Wrapper
-// Checks authentication status before rendering children
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -111,7 +103,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) return <div className="min-h-screen bg-brand-dark" />;
 
-  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -120,27 +111,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // --- ROUTING LOGIC ---
-
-// 3. Animated Routes Component
-// Handles the routing logic and the conditional loading screen
 const AnimatedRoutes = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Logic to show loader ONLY on specific paths (Login, Join Us, Admin)
+  // ✅ UPDATED LOGIC: Removed the wildcard check for admin
   useEffect(() => {
-    const triggerPaths = ["/login", "/connect"];
-    const isAdminPath = location.pathname.startsWith("/admin");
+    // Only trigger loader on these EXACT paths:
+    // 1. /login (Login page)
+    // 2. /connect (Join Us page)
+    // 3. /admin (Main Dashboard entry - triggers when logging in)
+    const triggerPaths = ["/login", "/connect", "/admin"];
 
-    if (triggerPaths.includes(location.pathname) || isAdminPath) {
+    // We removed 'location.pathname.startsWith("/admin")'
+    // This ensures navigating to "/admin/members" does NOT show the loader.
+    if (triggerPaths.includes(location.pathname)) {
       setIsLoading(true);
-      // Simulate loading delay for dramatic effect (1 second)
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 1000);
       return () => clearTimeout(timer);
     } else {
-      // Immediate render for standard nav (Home, Events, etc.)
       setIsLoading(false);
     }
   }, [location.pathname]);
@@ -148,18 +139,13 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       {isLoading ? (
-        // Show Custom Quantum Loader
         <PageLoader key="loader" />
       ) : (
-        // Render Routes
         <Routes location={location} key={location.pathname}>
-          {/* GROUP A: Public Routes (With Navbar & Footer) */}
+          {/* GROUP A: Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
-
-            {/* FAQ / Newcomer Page */}
             <Route path="/faq" element={<FaqPage />} />
-
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route path="/calendar" element={<Calendar />} />
@@ -170,15 +156,13 @@ const AnimatedRoutes = () => {
             <Route path="/media" element={<Media />} />
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
-
-            {/* User Dashboard */}
             <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 
-          {/* GROUP B: Standalone Routes (No Navbar/Footer) */}
+          {/* GROUP B: Standalone Routes */}
           <Route path="/login" element={<Login />} />
 
-          {/* GROUP C: Admin Routes (Protected + Admin Layout) */}
+          {/* GROUP C: Admin Routes */}
           <Route
             path="/admin"
             element={
@@ -283,15 +267,11 @@ const AnimatedRoutes = () => {
   );
 };
 
-// --- MAIN APP COMPONENT ---
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
-        {/* Helper to reset scroll position on navigation */}
         <ScrollToTop />
-
-        {/* Main Routing Logic */}
         <AnimatedRoutes />
       </div>
     </Router>
