@@ -242,6 +242,14 @@ const Media = () => {
 
   const schoolConfig = CAMPUSES.find((c) => c.id === activeSchool);
 
+  function getYouTubeId(url: string): string | null {
+    if (!url) return null;
+    const regExp =
+      /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[7].length === 11 ? match[7] : null;
+  }
+
   return (
     // ✅ FIXED: Increased top padding to pt-32 to clear the fixed navbar properly
     <div className="min-h-screen bg-brand-dark pb-20 pt-32">
@@ -482,31 +490,36 @@ const Media = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {videoMedia.map((video) => (
-                      <div
-                        key={video.id}
-                        onClick={() => setSelectedItem(video)}
-                        className="group relative aspect-video bg-black rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-brand-accent/50 transition-all"
-                      >
-                        <video
-                          src={video.url}
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <span className="ml-1 text-black font-bold">▶</span>
+                    {videoMedia.map((video) => {
+                      const ytId = getYouTubeId(video.url);
+                      return (
+                        <div
+                          key={video.id}
+                          onClick={() => setSelectedItem(video)}
+                          className="group relative aspect-video bg-black rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-brand-accent/50 transition-all"
+                        >
+                          {ytId ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                            />
+                          ) : (
+                            <video
+                              src={video.url}
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                            />
+                          )}
+                          {/* Play Button Overlay Remains the same */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <span className="ml-1 text-black font-bold">
+                                ▶
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/50 to-transparent">
-                          <h3 className="text-white font-bold truncate">
-                            {video.event_name}
-                          </h3>
-                          <p className="text-xs text-gray-300 mt-1">
-                            {video.date}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -525,15 +538,26 @@ const Media = () => {
             className="max-w-6xl w-full max-h-[90vh] flex flex-col md:flex-row bg-brand-dark border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Media */}
+            {/* Media Container in Lightbox */}
             <div className="flex-1 bg-black flex items-center justify-center relative min-h-[50vh]">
               {selectedItem.type === "video" ? (
-                <video
-                  src={selectedItem.url}
-                  controls
-                  autoPlay
-                  className="max-w-full max-h-[85vh]"
-                />
+                getYouTubeId(selectedItem.url) ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${getYouTubeId(
+                      selectedItem.url
+                    )}?autoplay=1`}
+                    className="w-full h-full min-h-[450px]"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={selectedItem.url}
+                    controls
+                    autoPlay
+                    className="max-w-full max-h-[85vh]"
+                  />
+                )
               ) : (
                 <img
                   src={selectedItem.url}
