@@ -8,12 +8,13 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
-  getDoc,
+  getDoc, // ✅ Import getDoc
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { db, auth } from "../lib/firebase";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { onAuthStateChanged } from "firebase/auth"; // ✅ Import Auth Listener
+import { db, auth } from "../lib/firebase"; // ✅ Import Auth
+import { Link } from "react-router-dom";
 import { logActivity } from "../utils/logger";
+import EditProfileModal from "../components/profile/EditProfileModal"; // ✅ Import Modal
 
 // Types
 interface AppEvent {
@@ -28,7 +29,6 @@ interface AppEvent {
 }
 
 const Admin = () => {
-  const navigate = useNavigate(); // ✅ Hook for redirection
   const [activeTab, setActiveTab] = useState("new event");
 
   // --- STATE FOR LIST OF EVENTS ---
@@ -40,8 +40,10 @@ const Admin = () => {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  // --- STATE FOR ADMIN PROFILE (For the button preview) ---
+  // --- ✅ STATE FOR ADMIN PROFILE ---
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // --- STATE FOR CREATE EVENT FORM ---
   const [eventForm, setEventForm] = useState({
@@ -54,15 +56,18 @@ const Admin = () => {
     description: "",
   });
 
-  // 1. Fetch Events & Logs & User Profile
+  // 1. Fetch Events & Logs & ✅ User Profile
   useEffect(() => {
-    // ✅ Fetch Admin Profile Data (Just for the button image)
+    // ✅ Fetch Admin Profile Data
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
-      if (user && db) {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
+      if (user) {
+        setCurrentUser(user);
+        if (db) {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          }
         }
       }
     });
@@ -84,11 +89,12 @@ const Admin = () => {
         });
         return () => {
           unsub();
-          unsubAuth();
+          unsubAuth(); // Cleanup auth listener
         };
       }
     }
 
+    // 2. Fetch Activity Logs
     if (activeTab === "activity logs") {
       setLoadingLogs(true);
       if (db) {
@@ -131,6 +137,7 @@ const Admin = () => {
         created_at: serverTimestamp(),
       });
 
+      // ✅ LOG ACTIVITY
       await logActivity(
         "Created Event",
         `Created event: ${eventForm.title} at ${eventForm.location}`
@@ -162,6 +169,7 @@ const Admin = () => {
     ) {
       try {
         await deleteDoc(doc(db!, "events", id));
+        // ✅ LOG ACTIVITY
         await logActivity("Deleted Event", `Deleted event ID: ${id}`);
       } catch (error) {
         alert("Error deleting event");
@@ -174,6 +182,7 @@ const Admin = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return alert("Please allow popups to print");
 
+    // Format Date & Time for Header
     const eventDate = event.event_date?.toDate
       ? event.event_date.toDate().toLocaleDateString("en-US", {
           weekday: "long",
@@ -188,6 +197,7 @@ const Admin = () => {
           .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : "";
 
+    // Generate 25 Empty Rows
     const rows = Array(25)
       .fill(0)
       .map(
@@ -204,6 +214,7 @@ const Admin = () => {
       )
       .join("");
 
+    // Construct the Printable HTML
     const html = `
       <html>
         <head>
@@ -261,6 +272,7 @@ const Admin = () => {
     }, 500);
   };
 
+  // 5. Filter Logic
   const filteredEvents = eventsList.filter(
     (event) =>
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -269,7 +281,17 @@ const Admin = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
-      {/* Header with Edit Profile Button */}
+      {/* ✅ ADMIN EDIT PROFILE MODAL */}
+      {showProfileModal && currentUser && (
+        <EditProfileModal
+          user={currentUser}
+          userData={userData || {}}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
+
+      {/* Header */}
+      {/* ✅ CHANGED TO FLEX CONTAINER TO HOLD THE BUTTON */}
       <div className="mb-10 pt-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-display font-bold text-white mb-2">
@@ -280,9 +302,9 @@ const Admin = () => {
           </p>
         </div>
 
-        {/* ✅ UPDATED BUTTON: Redirects to User Dashboard */}
+        {/* ✅ NEW: EDIT PROFILE BUTTON */}
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => setShowProfileModal(true)}
           className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
         >
           {userData?.photo_url ? (
@@ -296,7 +318,7 @@ const Admin = () => {
               {userData?.name?.charAt(0) || "A"}
             </div>
           )}
-          My Profile & Pass
+          Edit Profile
           <svg
             className="w-4 h-4 text-brand-muted group-hover:text-white transition-colors"
             fill="none"
@@ -307,13 +329,13 @@ const Admin = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M17 8l4 4m0 0l-4 4m4-4H3"
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
             />
           </svg>
         </button>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions (RESTORED TO 3 COLUMNS) */}
       <div className="grid md:grid-cols-3 gap-4 mb-12">
         <Link
           to="/scanner"
