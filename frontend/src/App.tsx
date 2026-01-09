@@ -36,6 +36,7 @@ import LogoIcon from "./assets/logo-icon.png";
 import ScannerPage from "./pages/Scanner";
 import ActivityLog from "./pages/admin/ActivityLog";
 import TestimonialManager from "./pages/admin/TestimonialManager";
+import Footer from "./components/layout/Footer"; // ✅ Imported Footer
 
 // --- FLOATING MESSENGER COMPONENT ---
 const FloatingMessenger = () => (
@@ -57,16 +58,18 @@ const FloatingMessenger = () => (
   </a>
 );
 
-// 1. Public Layout
+// 1. Public Layout (✅ Updated with Footer)
 const PublicLayout = () => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main>
+      {/* flex-grow pushes the footer to the bottom if content is short */}
+      <main className="flex-grow">
         <Outlet />
       </main>
+      <Footer />
       <FloatingMessenger />
-    </>
+    </div>
   );
 };
 
@@ -103,7 +106,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-brand-dark text-brand-text font-sans selection:bg-brand-accent selection:text-brand-dark">
         <Routes>
-          {/* Group A: Public Routes (With Navbar) */}
+          {/* Group A: Public Routes (With Navbar & Footer) */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
@@ -119,7 +122,7 @@ function App() {
             <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 
-          {/* Group B: Standalone Routes (No Navbar) */}
+          {/* Group B: Standalone Routes (No Navbar/Footer) */}
           <Route path="/login" element={<Login />} />
 
           {/* Group C: Admin Routes (Protected) */}
