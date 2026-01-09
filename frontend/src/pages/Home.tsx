@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   collection,
   query,
@@ -7,10 +7,13 @@ import {
   onSnapshot,
   type QueryDocumentSnapshot,
   type DocumentData,
+  doc,
+  getDoc,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../lib/firebase";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Components
 import EventCard from "../components/events/EventCard";
@@ -40,6 +43,52 @@ interface MediaItem {
   featured: boolean;
   created_at: any;
 }
+
+// --- HELPER: Custom Typewriter Hook ---
+const useTypewriter = (
+  words: string[],
+  speed = 150,
+  deleteSpeed = 100,
+  pause = 2000
+) => {
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [reverse, setReverse] = useState(false);
+  const [blink, setBlink] = useState(true);
+
+  // Blinking cursor effect
+  useEffect(() => {
+    const timeout2 = setTimeout(() => {
+      setBlink((prev) => !prev);
+    }, 500);
+    return () => clearTimeout(timeout2);
+  }, [blink]);
+
+  // Typing logic
+  useEffect(() => {
+    if (subIndex === words[index].length + 1 && !reverse) {
+      setTimeout(() => setReverse(true), pause);
+      return;
+    }
+
+    if (subIndex === 0 && reverse) {
+      setReverse(false);
+      setIndex((prev) => (prev + 1) % words.length);
+      return;
+    }
+
+    const timeout = setTimeout(
+      () => {
+        setSubIndex((prev) => prev + (reverse ? -1 : 1));
+      },
+      reverse ? deleteSpeed : speed
+    );
+
+    return () => clearTimeout(timeout);
+  }, [subIndex, index, reverse, words, speed, deleteSpeed, pause]);
+
+  return { text: words[index].substring(0, subIndex), blink };
+};
 
 // --- HELPER: YouTube ID Extractor ---
 const getYouTubeId = (url: string) => {
@@ -99,10 +148,25 @@ const InfiniteMarquee = () => (
   </div>
 );
 
+// ✅ OPTIMIZATION: Defined outside component to prevent re-renders
+const TYPEWRITER_WORDS = ["FAMILY", "ONE", "CHOSEN", "THE LIGHT", "RELENTLESS"];
+
 const Home = () => {
   const [events, setEvents] = useState<AppEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [featuredMedia, setFeaturedMedia] = useState<MediaItem | null>(null);
+
+  // Auth State
+  const [user, setUser] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
+
+  // ✅ UPDATED TYPEWRITER WORDS
+  const { text, blink } = useTypewriter(
+    TYPEWRITER_WORDS,
+    150, // Typing speed
+    100, // Deleting speed
+    2000 // Pause duration
+  );
 
   useEffect(() => {
     if (!db) {
@@ -110,7 +174,21 @@ const Home = () => {
       return;
     }
 
-    // Fetch Events
+    // 1. Listen for Auth Changes
+    const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserData(docSnap.data());
+        }
+      } else {
+        setUserData(null);
+      }
+    });
+
+    // 2. Fetch Events
     const eventsQuery = query(
       collection(db, "events"),
       orderBy("event_date", "asc"),
@@ -127,7 +205,7 @@ const Home = () => {
       setLoading(false);
     });
 
-    // Fetch Media
+    // 3. Fetch Media
     const mediaQuery = query(
       collection(db, "media"),
       orderBy("created_at", "desc"),
@@ -141,6 +219,7 @@ const Home = () => {
     });
 
     return () => {
+      unsubAuth();
       eventsUnsubscribe();
       mediaUnsubscribe();
     };
@@ -151,7 +230,7 @@ const Home = () => {
 
   return (
     <div className="relative isolate min-h-screen bg-brand-dark overflow-x-hidden">
-      {/* 🎬 ORIGINAL HERO SECTION (RESTORED) */}
+      {/* 🎬 HERO SECTION */}
       <div className="relative min-h-screen w-full overflow-hidden flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0">
@@ -180,10 +259,18 @@ const Home = () => {
                 Youth Xtreme
               </div>
 
+              {/* ✅ DYNAMIC HEADLINE */}
               <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white uppercase drop-shadow-2xl mb-6 leading-tight">
-                Faith. Fun. <br />
+                WE ARE... <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-white">
-                  Future.
+                  {text}
+                </span>
+                <span
+                  className={`${
+                    blink ? "opacity-100" : "opacity-0"
+                  } text-brand-accent transition-opacity duration-100`}
+                >
+                  |
                 </span>
               </h1>
 
@@ -245,6 +332,83 @@ const Home = () => {
       <ScrollReveal>
         <Mission />
       </ScrollReveal>
+
+      {/* MEMBER EXCLUSIVE SECTION (With Auth Check) */}
+      <div className="bg-black py-12 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-brand-accent text-xl">⚔️</span>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider">
+              Member Resources
+            </h2>
+          </div>
+
+          {user ? (
+            // UNLOCKED STATE
+            <Link
+              to="/evangelism-guide"
+              className="group relative overflow-hidden bg-brand-gray/30 border border-brand-accent/20 rounded-3xl p-8 transition-all hover:bg-brand-gray/50 hover:border-brand-accent"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-50">
+                <div className="w-24 h-24 bg-brand-accent/10 rounded-full blur-2xl"></div>
+              </div>
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="inline-block px-2 py-1 bg-brand-accent text-black text-[10px] font-bold uppercase tracking-widest rounded mb-2">
+                    Unlocked
+                  </div>
+                  <h3 className="text-3xl font-display font-bold text-white mb-2 group-hover:text-brand-accent transition-colors">
+                    The Field Manual
+                  </h3>
+                  <p className="text-brand-muted max-w-lg">
+                    Access tactical evangelism guides, the testimony builder,
+                    and apologetics training.
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-brand-accent group-hover:text-black group-hover:border-brand-accent transition-all">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            // LOCKED STATE
+            <div className="relative overflow-hidden bg-white/5 border border-white/5 rounded-3xl p-8 grayscale opacity-70">
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-2 py-1 bg-white/10 text-white/50 text-[10px] font-bold uppercase tracking-widest rounded mb-2">
+                    🔒 Locked Content
+                  </div>
+                  <h3 className="text-3xl font-display font-bold text-white/50 mb-2">
+                    The Field Manual
+                  </h3>
+                  <p className="text-white/30 max-w-lg">
+                    Login to access our member-exclusive tactical training and
+                    resources.
+                  </p>
+                </div>
+                <Link
+                  to="/login"
+                  className="px-6 py-3 rounded-xl bg-white/10 text-white font-bold hover:bg-brand-accent hover:text-black transition-colors"
+                >
+                  Login to Access
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* 📅 EVENTS SECTION */}
       <div className="bg-brand-dark py-24 relative z-10">
