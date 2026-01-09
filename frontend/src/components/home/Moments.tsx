@@ -12,27 +12,27 @@ const MOMENTS = [
   {
     id: 2,
     url: "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/516546333_1039160524961196_7193095470575035584_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=K-_BsqhQa64Q7kNvwHuaX1d&_nc_oc=AdngwA6CeQVoQ_UYyYscWNgnFS6X9x-CFdgaTTV_zw-xSBMVwsU9zseGyz5khuvFRQw&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=MPBIKIIGSg1MADOxRzkMJw&oh=00_Afo7Jmi85FWkoWUPO0OAJGvs3Y3OjPNN0ef7ClthYGVjcA&oe=6966D6B9",
-    caption: "The Crew",
+    caption: "Huddle",
   },
   {
     id: 3,
     url: "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/516541277_1039161651627750_2232541084280064129_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=PGdbqdQDs9EQ7kNvwGdGJIQ&_nc_oc=AdlbWAi0znTCuyY0FtViYJ8qZQFVQiLjf0ZQkER_freg7TsWEv3M6BcW5ZTgL_eNqs0&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=ccSh9RCOJ414Ajfk7z9ecw&oh=00_AfqCHQugx_rp9tla-ImgY9E50-jAkiP_EeQGUkgobVs1pg&oe=6966C9C8",
-    caption: "Friday Hype",
+    caption: "Group Pictures",
   },
   {
     id: 4,
     url: "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/516867446_1039161838294398_3626381345563479035_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=CdkOIxRd2-0Q7kNvwEsozUV&_nc_oc=AdlHTz0InVXdGWZRalvg4PqgewlAZ46j-h_hkC18JIVhht-1uQ4PNoQz1M7efxScDlk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=KO8LTU4smzMdNzBKE12SGA&oh=00_AfracbXcVxanwRio_WFpNpDWpojKACW0NMG1Op47QVFBtQ&oe=6966C721",
-    caption: "Community",
+    caption: "Moments",
   },
   {
     id: 5,
     url: "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/516792907_1039161038294478_7066308658921254478_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=RyHWMu_JVH0Q7kNvwH8FMy0&_nc_oc=AdnwPdg6z1nx2hRVKFEFY4Xo1Wm3E_gHIvllJgsmSnw_E27MGAC3wOpJ6WfTCVggXuM&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=uEDje6shjNKFRI5Z7e2Mqw&oh=00_AfoVOQ7zmOT5Lsn4DFobJ6FrY4nHvFOK8Q02vIfq6h-gvA&oe=6966B733",
-    caption: "Small Groups",
+    caption: "Commitments to MMM",
   },
   {
     id: 6,
     url: "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/517339782_1039161521627763_6477359528226062393_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=KErVlFM19okQ7kNvwF2dRuw&_nc_oc=AdkE2gPlsirsrhGSIHx9Ku_9v8ZvhHGrN6UUpHBd6uySGz6fn-yMaFkzW4UrD5eBlVw&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=qXFlYNIrVmBvzKTQsWnWTA&oh=00_AfogA_56pxhvsjKuxngeJpBvFlZsNFnR594hzShStvE-lA&oe=6966BBFF",
-    caption: "Summer Camp",
+    caption: "Prayer",
   },
 ];
 
