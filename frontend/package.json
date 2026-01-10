@@ -13,6 +13,8 @@
     "@yudiel/react-qr-scanner": "^2.5.0",
     "firebase": "^11.0.2",
     "framer-motion": "^12.24.0",
+    "jspdf": "^4.0.0",
+    "jspdf-autotable": "^5.0.7",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-confetti": "^6.4.0",
