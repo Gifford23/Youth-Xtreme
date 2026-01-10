@@ -1,21 +1,48 @@
 import {
   useState,
+  useEffect,
+  useRef,
   type ReactElement,
   type ReactNode,
   type SVGProps,
 } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  doc,
+  updateDoc,
+  writeBatch,
+} from "firebase/firestore";
+import { auth, db } from "../../lib/firebase";
 import ThemeToggle from "../common/ThemeToggle";
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
+interface Notification {
+  id: string;
+  message: string;
+  type: "info" | "success" | "warning" | "alert";
+  read: boolean;
+  link?: string;
+  created_at: any;
+}
+
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Notification State
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { to: "/admin", label: "Dashboard", Icon: SettingsIcon },
@@ -23,7 +50,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
     { to: "/admin/media", label: "Media Feed", Icon: CameraIcon },
-    // ✅ NEW: Added Testimonials Link
     { to: "/admin/testimonials", label: "Testimonials", Icon: ChatIcon },
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
     { to: "/admin/rsvps", label: "Registrations", Icon: TicketIcon },
@@ -31,7 +57,70 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { to: "/admin/logs", label: "Activity Logs", Icon: ActivityIcon },
   ];
 
-  // ✅ LOGOUT FUNCTION
+  // 1. Listen for Notifications
+  useEffect(() => {
+    if (!db) return;
+
+    const q = query(
+      collection(db, "notifications"),
+      orderBy("created_at", "desc"),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Notification[];
+
+      setNotifications(data);
+      setUnreadCount(data.filter((n) => !n.read).length);
+    });
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // 2. Handle Mark as Read & Redirect
+  const handleMarkAsRead = async (id: string, link?: string) => {
+    if (!db) return;
+    try {
+      const notifRef = doc(db, "notifications", id);
+      await updateDoc(notifRef, { read: true });
+      if (link) {
+        navigate(link);
+        setShowNotifications(false);
+      }
+    } catch (error) {
+      console.error("Error updating notification:", error);
+    }
+  };
+
+  // 3. Mark All Read
+  const handleMarkAllRead = async () => {
+    if (!db) return;
+    const batch = writeBatch(db);
+    notifications.forEach((n) => {
+      if (!n.read) {
+        const ref = doc(db, "notifications", n.id);
+        batch.update(ref, { read: true });
+      }
+    });
+    await batch.commit();
+  };
+
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to sign out?")) {
       try {
@@ -41,6 +130,51 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         console.error("Error signing out:", error);
         alert("Failed to sign out.");
       }
+    }
+  };
+
+  // ✅ HELPER: Get Color based on Notification Type
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "success":
+        return "bg-green-500";
+      case "warning":
+        return "bg-sky-500"; // ✅ OPTION 2: Sky Blue (Hope/Peace)
+      case "alert":
+        return "bg-red-500";
+      default:
+        return "bg-brand-accent";
+    }
+  };
+
+  // ✅ HELPER: Custom Label Text
+  const getNotificationLabel = (notif: Notification) => {
+    // 1. Prayer Request (Warning)
+    if (notif.type === "warning") return "PRAYER REQUEST";
+
+    // 2. RSVP / Praise (Success)
+    if (notif.type === "success") {
+      if (notif.message.toLowerCase().includes("praise"))
+        return "PRAISE REPORT";
+      return "REGISTERED";
+    }
+
+    if (notif.type === "alert") return "URGENT";
+    return "INFO";
+  };
+
+  // ✅ HELPER: Render Icon based on Type
+  const renderNotificationIcon = (type: string) => {
+    switch (type) {
+      case "success":
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      case "warning":
+        // ✅ OPTION 2: Hands Icon in Sky Blue
+        return <HandsIcon className="w-5 h-5 text-sky-500" />;
+      case "alert":
+        return <AlertIcon className="w-5 h-5 text-red-500" />;
+      default:
+        return <InfoIcon className="w-5 h-5 text-brand-accent" />;
     }
   };
 
@@ -61,7 +195,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          {/* 1. Sidebar Header */}
+          {/* Sidebar Header */}
           <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <h1 className="font-display text-2xl font-bold tracking-wider text-white">
               YOUTH <span className="text-brand-accent">XTREME</span>
@@ -74,7 +208,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </button>
           </div>
 
-          {/* 2. Navigation Links */}
+          {/* Navigation Links */}
           <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col">
             <div className="px-3 text-[11px] font-bold uppercase tracking-widest text-brand-muted mb-4">
               Main Menu
@@ -100,7 +234,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               ))}
             </nav>
 
-            {/* ✅ LOGOUT BUTTON */}
             <div className="mt-auto pt-8">
               <button
                 onClick={handleLogout}
@@ -112,19 +245,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </div>
 
-          {/* 3. Sidebar Footer (Copyright) */}
           <div className="p-6 border-t border-white/5 bg-black/20">
             <div className="flex items-center justify-between text-xs text-brand-muted font-medium">
               <span>© 2026 Youth Xtreme</span>
               <span className="bg-white/10 px-2 py-0.5 rounded-md text-white/50">
-                v1.0
+                v1.1
               </span>
             </div>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 flex flex-col min-w-0 relative">
           {/* Top Bar */}
           <header className="h-16 bg-brand-gray/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
             <div className="flex items-center gap-4">
@@ -139,10 +271,112 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               </h2>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* NOTIFICATION BELL */}
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 rounded-full text-brand-muted hover:text-white hover:bg-white/10 transition-colors relative"
+                >
+                  <BellIcon className="w-6 h-6" />
+
+                  {/* NUMBER BADGE */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-brand-dark animate-bounce-in shadow-sm">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* NOTIFICATION DROPDOWN */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-brand-gray border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in origin-top-right">
+                    <div className="p-3 border-b border-white/10 flex justify-between items-center bg-black/20">
+                      <h3 className="text-sm font-bold text-white">
+                        Notifications
+                      </h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[10px] text-brand-accent hover:underline uppercase font-bold tracking-wider"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center text-brand-muted text-sm">
+                          No notifications yet.
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-white/5">
+                          {notifications.map((notif) => (
+                            <div
+                              key={notif.id}
+                              onClick={() =>
+                                handleMarkAsRead(notif.id, notif.link)
+                              }
+                              className={`p-4 hover:bg-white/5 transition-colors cursor-pointer flex items-start gap-3 ${
+                                !notif.read ? "bg-white/5" : ""
+                              }`}
+                            >
+                              {/* STATUS ICON */}
+                              <div className="mt-0.5 flex-shrink-0 bg-white/5 p-1.5 rounded-full border border-white/5">
+                                {renderNotificationIcon(notif.type)}
+                              </div>
+
+                              <div className="flex-1">
+                                <p
+                                  className={`text-sm leading-tight ${
+                                    !notif.read
+                                      ? "text-white font-bold"
+                                      : "text-brand-muted"
+                                  }`}
+                                >
+                                  {notif.message}
+                                </p>
+                                {/* CUSTOM LABELS & COLORS */}
+                                <p className="text-[10px] text-brand-muted mt-1.5 uppercase tracking-wide flex items-center gap-2">
+                                  {!notif.read && (
+                                    <span
+                                      className={`text-[9px] px-1.5 py-0.5 rounded ${
+                                        notif.type === "warning"
+                                          ? "bg-sky-500/20 text-sky-400" // ✅ OPTION 2: Sky Blue
+                                          : notif.type === "success"
+                                          ? "bg-green-500/20 text-green-500"
+                                          : notif.type === "alert"
+                                          ? "bg-red-500/20 text-red-500"
+                                          : "bg-brand-accent/20 text-brand-accent"
+                                      }`}
+                                    >
+                                      {getNotificationLabel(notif)}
+                                    </span>
+                                  )}
+                                  {notif.created_at?.toDate
+                                    ? notif.created_at.toDate().toLocaleString()
+                                    : "Just now"}
+                                </p>
+                              </div>
+
+                              {/* Unread Dot */}
+                              {!notif.read && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-2"></div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <ThemeToggle />
+
               <div className="hidden sm:block text-xs font-medium text-brand-muted bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                Authorized Personnel Only
+                Authorized
               </div>
             </div>
           </header>
@@ -156,14 +390,92 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 };
 
 // --- Icons ---
-
 type NavIcon = (props: SVGProps<SVGSVGElement>) => ReactElement;
+
+const CheckCircleIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const WarningIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+    />
+  </svg>
+);
+
+const InfoIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const AlertIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const BellIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+    />
+  </svg>
+);
 
 const HomeIcon: NavIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
-    aria-hidden="true"
     stroke="currentColor"
     strokeWidth="2"
     {...props}
@@ -176,7 +488,6 @@ const HomeIcon: NavIcon = (props) => (
   </svg>
 );
 
-// ✅ NEW CHAT ICON FOR TESTIMONIALS
 const ChatIcon: NavIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
@@ -197,7 +508,6 @@ const CalendarIcon: NavIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
-    aria-hidden="true"
     stroke="currentColor"
     strokeWidth="2"
     {...props}
@@ -251,7 +561,6 @@ const SettingsIcon: NavIcon = (props) => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
-    aria-hidden="true"
     stroke="currentColor"
     strokeWidth="2"
     {...props}

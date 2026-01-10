@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth"; // ✅ Import Auth Listener
+import { onAuthStateChanged } from "firebase/auth";
 import { auth, db, isFirebaseConfigured } from "../lib/firebase";
+// ✅ 1. IMPORT THE NOTIFICATION UTILITY
+import { sendNotification } from "../utils/notify";
 
 const PrayerWall = () => {
   const [activeTab, setActiveTab] = useState<"requests" | "praise">("requests");
-  const [user, setUser] = useState<any>(null); // ✅ Store User State
+  const [user, setUser] = useState<any>(null);
 
   // Prayer Request Form
   const [requestForm, setRequestForm] = useState({ request: "" });
@@ -17,7 +19,6 @@ const PrayerWall = () => {
   const [praiseSubmitting, setPraiseSubmitting] = useState(false);
   const [praiseMessage, setPraiseMessage] = useState("");
 
-  // ✅ Check for logged-in user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -34,13 +35,22 @@ const PrayerWall = () => {
         request: requestForm.request.trim(),
         created_at: serverTimestamp(),
         commit_count: 0,
-        // ✅ Save User ID (Critical for Personal Journal)
-        userId: user ? user.uid : null, 
-        isAnswered: false 
+        userId: user ? user.uid : null,
+        isAnswered: false,
       });
+
+      // ✅ 2. TRIGGER NOTIFICATION (For Prayer Requests)
+      // Type 'warning' makes it stand out (yellow icon usually, or just distinct)
+      await sendNotification(
+        "New Prayer Request Received",
+        "warning",
+        "/admin/prayer"
+      );
+
       setRequestForm({ request: "" });
       setRequestMessage("Request sent to our prayer team! 🙏");
     } catch (err) {
+      console.error(err);
       setRequestMessage("Failed to post request. Please try again.");
     } finally {
       setRequestSubmitting(false);
@@ -56,12 +66,22 @@ const PrayerWall = () => {
         author: praiseForm.author.trim(),
         testimony: praiseForm.testimony.trim(),
         created_at: serverTimestamp(),
-        // ✅ Save User ID (Optional, but good for tracking praises too)
         userId: user ? user.uid : null,
       });
+
+      // ✅ 3. TRIGGER NOTIFICATION (For Praise Reports)
+      // We use the author's name if provided, or "Someone"
+      const authorName = praiseForm.author.trim() || "Someone";
+      await sendNotification(
+        `New Praise Report from ${authorName}!`,
+        "success",
+        "/admin/prayer"
+      );
+
       setPraiseForm({ author: "", testimony: "" });
       setPraiseMessage("Praise report submitted! 🙌");
     } catch (err) {
+      console.error(err);
       setPraiseMessage("Failed to share praise. Please try again.");
     } finally {
       setPraiseSubmitting(false);

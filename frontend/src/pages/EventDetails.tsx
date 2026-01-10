@@ -9,7 +9,8 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../lib/firebase";
-import Confetti from "react-confetti"; // ✅ Import for celebration
+import Confetti from "react-confetti";
+import { sendNotification } from "..//utils/notify"; // ✅ 1. IMPORT THIS
 
 interface AppEvent {
   id: string;
@@ -35,16 +36,15 @@ const EventDetails = () => {
     notes: "",
   });
   const [rsvpLoading, setRsvpLoading] = useState(false);
-  const [rsvpMessage, setRsvpMessage] = useState<string>(""); // Keep for errors
+  const [rsvpMessage, setRsvpMessage] = useState<string>("");
 
-  // ✅ MODAL STATE
+  // Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [windowDimension, setWindowDimension] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
-  // Track window size for Confetti
   useEffect(() => {
     const handleResize = () =>
       setWindowDimension({
@@ -88,8 +88,7 @@ const EventDetails = () => {
         <div className="bg-brand-gray p-6 rounded-2xl border border-white/5">
           <p className="text-brand-muted">
             Firebase is not configured. Add your <code>VITE_FIREBASE_*</code>{" "}
-            values to
-            <code>.env.local</code> and restart the dev server.
+            values to <code>.env.local</code> and restart the dev server.
           </p>
         </div>
       </div>
@@ -129,10 +128,8 @@ const EventDetails = () => {
     : "Date TBD";
 
   return (
-    // Changed pt-20 to pt-28 to give the "Back" button room to breathe from the top
     <div className="pt-28 pb-20 min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Changed mb-6 to mb-10 for a cleaner separation from the main card */}
         <div className="mb-10">
           <Link
             to="/events"
@@ -218,6 +215,7 @@ const EventDetails = () => {
                       setRsvpLoading(true);
                       setRsvpMessage("");
                       try {
+                        // 1. Save to Database
                         await addDoc(collection(db, "events", id, "rsvps"), {
                           name: rsvpData.name.trim(),
                           email: rsvpData.email.trim(),
@@ -227,7 +225,16 @@ const EventDetails = () => {
                           created_at: serverTimestamp(),
                         });
 
-                        // ✅ SUCCESS: Trigger Modal & Reset Form
+                        // ✅ 2. TRIGGER NOTIFICATION
+                        await sendNotification(
+                          `New RSVP: ${rsvpData.name} for ${
+                            event?.title || "Event"
+                          }`,
+                          "success",
+                          "/admin/rsvps"
+                        );
+
+                        // 3. Show Success Modal
                         setShowSuccessModal(true);
                         setRsvpData({
                           name: "",
@@ -376,16 +383,13 @@ const EventDetails = () => {
         </div>
       </div>
 
-      {/* ✅ SUCCESS MODAL (With Confetti) */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
             onClick={() => setShowSuccessModal(false)}
           />
 
-          {/* Confetti Cannon */}
           <Confetti
             width={windowDimension.width}
             height={windowDimension.height}
@@ -394,7 +398,6 @@ const EventDetails = () => {
             gravity={0.15}
           />
 
-          {/* Modal Content */}
           <div className="relative bg-brand-gray border border-white/10 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl overflow-hidden animate-fade-in-up">
             <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
               <span className="text-4xl">🎉</span>
