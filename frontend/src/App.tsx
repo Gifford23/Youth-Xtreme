@@ -50,6 +50,7 @@ import ActivityLog from "./pages/admin/ActivityLog";
 import TestimonialManager from "./pages/admin/TestimonialManager";
 import ScannerPage from "./pages/Scanner";
 import ManageReels from "./pages/admin/ManageReels";
+import Analytics from "./pages/admin/Analytics";
 
 // Assets
 import LogoIcon from "./assets/logo-icon.png";
@@ -264,6 +265,17 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute>
                 <ScannerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <Analytics />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
