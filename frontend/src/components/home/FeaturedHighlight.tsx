@@ -120,7 +120,7 @@ const FeaturedHighlight = () => {
               </button>
             </div>
             <a
-              href="https://www.facebook.com/youthxtremecdeo"
+              href="https://www.facebook.com/yxcdo"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 text-sm font-bold text-brand-dark bg-white px-6 py-3 rounded-full hover:bg-brand-accent transition-all"
