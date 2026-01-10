@@ -157,19 +157,27 @@ const AnimatedRoutes = () => {
             <Route path="/resources/:id" element={<ResourceDetails />} />
             <Route path="/prayer-wall" element={<PrayerWall />} />
             <Route path="/connect" element={<ConnectCard />} />
-            <Route path="/media" element={<Media />} />
+            <Route
+              path="/media"
+              element={
+                <ProtectedRoute>
+                  <Media />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/journey" element={<Journey />} />
             <Route path="/journey/leadership" element={<LeadershipPath />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/invite" element={<InviteGenerator />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin/reels" element={<ManageReels />} />
           </Route>
 
           {/* GROUP B: Standalone Routes */}
           <Route path="/login" element={<Login />} />
 
           {/* GROUP C: Admin Routes */}
+          <Route path="/admin/reels" element={<ManageReels />} />
+
           <Route
             path="/admin"
             element={
