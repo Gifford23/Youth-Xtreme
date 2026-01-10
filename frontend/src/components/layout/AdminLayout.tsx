@@ -373,7 +373,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <ThemeToggle />
 
               <div className="hidden sm:block text-xs font-medium text-brand-muted bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                Authorized
+                Admin Authorized Only
               </div>
             </div>
           </header>

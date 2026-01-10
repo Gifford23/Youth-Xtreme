@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  limit,
+} from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { motion } from "framer-motion";
 
@@ -20,7 +26,11 @@ const FeaturedHighlight = () => {
     if (!db) return;
 
     // Query ordered by creation time (newest first)
-    const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "reels"),
+      orderBy("createdAt", "desc"),
+      limit(10)
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const reelsData = snapshot.docs.map((doc) => ({
@@ -199,3 +209,6 @@ const FeaturedHighlight = () => {
 };
 
 export default FeaturedHighlight;
+function setLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
