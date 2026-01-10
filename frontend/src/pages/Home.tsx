@@ -28,6 +28,7 @@ import CallToAction from "../components/home/CallToAction";
 import VerseOfTheDay from "../components/home/VerseOfTheDay";
 import NextEventCountdown from "../components/home/NextEventCountdown";
 import Moments from "../components/home/Moments"; // ✅ ADDED MOMENTS COMPONENT
+import FeaturedHighlight from "../components/home/FeaturedHighlight";
 
 // --- TYPES ---
 interface AppEvent {
@@ -499,6 +500,10 @@ const Home = () => {
       {/* ---------------------------------- */}
       <ScrollReveal>
         <Testimonials />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <FeaturedHighlight />
       </ScrollReveal>
 
       {/* ✅ NEW: MOMENTS SECTION */}

@@ -49,6 +49,7 @@ import PrayerManager from "./pages/admin/PrayerManager";
 import ActivityLog from "./pages/admin/ActivityLog";
 import TestimonialManager from "./pages/admin/TestimonialManager";
 import ScannerPage from "./pages/Scanner";
+import ManageReels from "./pages/admin/ManageReels";
 
 // Assets
 import LogoIcon from "./assets/logo-icon.png";
@@ -161,6 +162,7 @@ const AnimatedRoutes = () => {
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/invite" element={<InviteGenerator />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/reels" element={<ManageReels />} />
           </Route>
 
           {/* GROUP B: Standalone Routes */}

@@ -44,11 +44,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  // ✅ ADDED "REELS MANAGER" HERE
   const navItems = [
     { to: "/admin", label: "Dashboard", Icon: SettingsIcon },
     { to: "/", label: "Home", Icon: HomeIcon },
     { to: "/admin/members", label: "Members", Icon: UsersIcon },
     { to: "/admin/connect", label: "Connect Cards", Icon: ClipboardIcon },
+    { to: "/admin/reels", label: "Reels Manager", Icon: VideoIcon }, // ✅ NEW
     { to: "/admin/media", label: "Media Feed", Icon: CameraIcon },
     { to: "/admin/testimonials", label: "Testimonials", Icon: ChatIcon },
     { to: "/admin/calendar", label: "Calendar Manager", Icon: DateIcon },
@@ -139,7 +141,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       case "success":
         return "bg-green-500";
       case "warning":
-        return "bg-sky-500"; // ✅ OPTION 2: Sky Blue (Hope/Peace)
+        return "bg-sky-500";
       case "alert":
         return "bg-red-500";
       default:
@@ -149,16 +151,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   // ✅ HELPER: Custom Label Text
   const getNotificationLabel = (notif: Notification) => {
-    // 1. Prayer Request (Warning)
     if (notif.type === "warning") return "PRAYER REQUEST";
-
-    // 2. RSVP / Praise (Success)
     if (notif.type === "success") {
       if (notif.message.toLowerCase().includes("praise"))
         return "PRAISE REPORT";
       return "REGISTERED";
     }
-
     if (notif.type === "alert") return "URGENT";
     return "INFO";
   };
@@ -169,7 +167,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       case "success":
         return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
       case "warning":
-        // ✅ OPTION 2: Hands Icon in Sky Blue
         return <HandsIcon className="w-5 h-5 text-sky-500" />;
       case "alert":
         return <AlertIcon className="w-5 h-5 text-red-500" />;
@@ -343,7 +340,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                                     <span
                                       className={`text-[9px] px-1.5 py-0.5 rounded ${
                                         notif.type === "warning"
-                                          ? "bg-sky-500/20 text-sky-400" // ✅ OPTION 2: Sky Blue
+                                          ? "bg-sky-500/20 text-sky-400"
                                           : notif.type === "success"
                                           ? "bg-green-500/20 text-green-500"
                                           : notif.type === "alert"
@@ -391,6 +388,23 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
 // --- Icons ---
 type NavIcon = (props: SVGProps<SVGSVGElement>) => ReactElement;
+
+// ✅ NEW VIDEO ICON FOR REELS
+const VideoIcon: NavIcon = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+    />
+  </svg>
+);
 
 const CheckCircleIcon: NavIcon = (props) => (
   <svg
