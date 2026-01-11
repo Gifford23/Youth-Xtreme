@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // ✅ Added Link
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- BIBLICAL & YOUTH-FRIENDLY DATA ---
@@ -30,7 +31,7 @@ const faqs = [
   },
 ];
 
-// --- COMPONENT: Single FAQ Card (Soft Glass Bubble) ---
+// --- COMPONENT: Single FAQ Card ---
 const FaqItem = ({
   question,
   answer,
@@ -70,7 +71,6 @@ const FaqItem = ({
           {question}
         </span>
 
-        {/* Soft Circular Icon */}
         <div
           className={`relative ml-4 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 ${
             isOpen
@@ -118,10 +118,19 @@ const FaqItem = ({
 // --- MAIN PAGE COMPONENT ---
 const FaqPage = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [showPopup, setShowPopup] = useState(false); // ✅ Pop-up State
+
+  // ✅ Trigger Pop-up after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPopup(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-brand-dark pt-32 pb-24 px-6 relative overflow-hidden isolate">
-      {/* --- ATMOSPHERE: Floating 'Spirit' Lights --- */}
+      {/* --- ATMOSPHERE --- */}
       <motion.div
         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -168,7 +177,7 @@ const FaqPage = () => {
           </motion.p>
         </div>
 
-        {/* FAQ Cards Container */}
+        {/* FAQ Cards */}
         <div className="space-y-4">
           {faqs.map((faq, index) => (
             <FaqItem
@@ -182,7 +191,7 @@ const FaqPage = () => {
           ))}
         </div>
 
-        {/* Soft Contact Section */}
+        {/* Bottom Contact (Messenger) */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -223,6 +232,63 @@ const FaqPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* ✅ PROFESSIONAL CONNECT POP-UP */}
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, y: 20 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="fixed bottom-6 right-6 z-50 w-full max-w-[340px] px-4 sm:px-0"
+          >
+            <div className="relative bg-brand-gray/90 backdrop-blur-xl border border-brand-accent/30 p-5 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center gap-4">
+              {/* Close Button */}
+              <button
+                onClick={() => setShowPopup(false)}
+                className="absolute top-2 right-2 text-white/30 hover:text-white transition-colors p-1"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Icon */}
+              <div className="w-12 h-12 rounded-full bg-brand-accent text-brand-dark flex items-center justify-center shrink-0">
+                <span className="text-xl">🫶🏻</span>
+              </div>
+
+              {/* Text */}
+              <div className="flex-1">
+                <h4 className="text-white font-bold text-sm mb-0.5">
+                  No Accidents.
+                </h4>
+                <p className="text-brand-muted text-xs leading-tight mb-3">
+                  We believe God ordered your steps to be here today. We'd love
+                  to meet you!
+                </p>
+                <Link
+                  to="/connect"
+                  className="text-xs font-bold text-brand-accent hover:text-white uppercase tracking-wider flex items-center gap-1 transition-colors"
+                >
+                  Connect With Us &rarr;
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

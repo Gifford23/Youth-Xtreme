@@ -124,7 +124,7 @@ const Navbar = () => {
                       : "text-brand-muted hover:text-brand-text hover:bg-white/5"
                   }`}
                 >
-                  Get Involved
+                  Connect
                   <svg
                     className="w-3 h-3 pt-0.5"
                     fill="none"
