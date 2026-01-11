@@ -30,6 +30,9 @@ import NextEventCountdown from "../components/home/NextEventCountdown";
 import Moments from "../components/home/Moments"; // ✅ ADDED MOMENTS COMPONENT
 import FeaturedHighlight from "../components/home/FeaturedHighlight";
 
+// ---Hero Section Bacground Image ---
+import HeroBg from "../assets/hero-bg.jpg";
+
 // --- TYPES ---
 interface AppEvent {
   id: string;
@@ -248,7 +251,7 @@ const Home = () => {
       <div className="relative min-h-screen w-full overflow-hidden flex items-center">
         <div className="absolute inset-0">
           <img
-            src="https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/481313715_944325814444668_9017226806731183851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Kbd4mz1JAjEQ7kNvwFfK7qI&_nc_oc=AdkolRWa3yazhVAupXSxmkrDAOXeKc1tmi41iinqYkWXEOY0Xjj0Iv8XZE7mrFYmbWk&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=aO60RdZ9b3V3B64T-WcmBA&oh=00_AfqLybzV6NzDwK7WYHlEbXJBR5tvRDefUe_L0-qlt6hqXQ&oe=69626C1F"
+            src={HeroBg}
             alt="Youth Xtreme Hero"
             className="h-full w-full object-cover"
           />
