@@ -34,6 +34,7 @@ import LeadershipPath from "./pages/LeadershipPath";
 import UserDashboard from "./pages/UserDashboard";
 import InviteGenerator from "./pages/InviteGenerator";
 import Dashboard from "./pages/Dashboard";
+import Outreach from "./pages/Outreach";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -153,10 +154,18 @@ const AnimatedRoutes = () => {
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route path="/calendar" element={<Calendar />} />
-            <Route path="/resources" element={<Resources />} />
+            <Route
+              path="/resources"
+              element={
+                <ProtectedRoute>
+                  <Resources />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/resources/:id" element={<ResourceDetails />} />
             <Route path="/prayer-wall" element={<PrayerWall />} />
             <Route path="/connect" element={<ConnectCard />} />
+            <Route path="/outreach" element={<Outreach />} />
             <Route
               path="/media"
               element={

@@ -17,7 +17,7 @@ const UserDashboard = () => {
   const [photoUrl, setPhotoUrl] = useState("");
   const [birthday, setBirthday] = useState("");
 
-  // ✅ NEW: Volunteer State
+  // ✅ Volunteer State
   const [isVolunteer, setIsVolunteer] = useState(false);
 
   // Modal States
@@ -161,7 +161,7 @@ const UserDashboard = () => {
               My Profile
             </h1>
             <p className="text-brand-muted">
-              Manage your personal details and public presence.
+              Manage your personal details and access member tools.
             </p>
           </div>
 
@@ -194,7 +194,7 @@ const UserDashboard = () => {
               <span className="sm:hidden">Scan</span>
             </Link>
 
-            {/* ✅ 2. NEW: INVITE GENERATOR BUTTON */}
+            {/* 2. INVITE GENERATOR BUTTON */}
             <Link
               to="/invite"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-brand-accent/30 text-brand-accent font-bold px-6 py-3 rounded-xl transition-all"
@@ -240,10 +240,11 @@ const UserDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: Profile Card (Preview) */}
-          <div className="lg:col-span-1">
-            <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl sticky top-32 text-center relative overflow-hidden">
-              {/* VOLUNTEER BADGE (CONDITIONAL) */}
+          {/* LEFT COLUMN: Profile Card & Quick Links */}
+          <div className="lg:col-span-1 space-y-8">
+            {/* 1. Profile Card */}
+            <div className="bg-brand-gray border border-white/5 rounded-3xl p-8 shadow-xl text-center relative overflow-hidden">
+              {/* VOLUNTEER BADGE */}
               {isVolunteer && (
                 <div className="absolute top-0 right-0 p-4 animate-fade-in-down">
                   <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg shadow-yellow-500/20 flex items-center gap-1">
@@ -319,6 +320,45 @@ const UserDashboard = () => {
                 </div>
               </div>
             </div>
+
+            {/* ✅ 2. NEW: MEMBER RESOURCES CARD */}
+            <Link to="/resources" className="block group">
+              <div className="bg-gradient-to-br from-brand-accent/20 to-brand-dark border border-brand-accent/30 rounded-3xl p-6 shadow-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.2)] hover:scale-[1.02] transition-all relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-brand-accent/20 rounded-full blur-2xl -mr-8 -mt-8"></div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center text-brand-dark">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-bold bg-black/40 text-brand-accent px-2 py-1 rounded">
+                    MEMBER ONLY
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-accent transition-colors">
+                  Resources Library
+                </h3>
+                <p className="text-sm text-brand-muted mb-4">
+                  Access devotionals, guides, and leadership tools.
+                </p>
+
+                <span className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Browse Files &rarr;
+                </span>
+              </div>
+            </Link>
           </div>
 
           {/* RIGHT COLUMN: Settings Form */}

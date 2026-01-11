@@ -10,7 +10,11 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Dropdown state
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  // Dropdown State
+  const [isGetInvolvedOpen, setIsGetInvolvedOpen] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -30,7 +34,7 @@ const Navbar = () => {
     return () => unsubscribe();
   }, []);
 
-  // Close dropdown when clicking outside
+  // Click Outside Handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -52,22 +56,31 @@ const Navbar = () => {
     }
   };
 
-  const navLinks = [
+  const isActive = (path: string) => location.pathname === path;
+
+  // --- NAVIGATION DATA ---
+
+  // 1. Standard Main Links
+  const mainLinks = [
     { name: "Home", path: "/" },
     { name: "Events", path: "/events" },
     { name: "Calendar", path: "/calendar" },
-    ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []),
-    { name: "Resources", path: "/resources" },
+    // ✅ FIXED: Points to #moments anchor so it scrolls smoothly on Home
     { name: "Media", path: "/media" },
-    { name: "I'm New", path: "/faq" }, // ✅ Added FAQ Link
+    ...(user ? [{ name: "Prayer", path: "/prayer-wall" }] : []),
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  // 2. "Get Involved" Dropdown Content
+  const getInvolvedLinks = [
+    { name: "Outreach", path: "/outreach" },
+    { name: "I'm New", path: "/faq" },
+  ];
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-brand-dark/95 backdrop-blur-md border-b border-brand-border transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
+          {/* LOGO */}
           <Link to="/" className="flex-shrink-0 flex items-center gap-3">
             <img
               src={Logo}
@@ -79,10 +92,11 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Menu */}
+          {/* --- DESKTOP MENU --- */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-6">
-              {navLinks.map((link) => (
+              {/* Standard Links */}
+              {mainLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
@@ -95,14 +109,59 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
+
+              {/* ✅ DROPDOWN: "Get Involved" */}
+              <div
+                className="relative group"
+                onMouseEnter={() => setIsGetInvolvedOpen(true)}
+                onMouseLeave={() => setIsGetInvolvedOpen(false)}
+              >
+                <button
+                  className={`px-3 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-1 ${
+                    location.pathname === "/outreach" ||
+                    location.pathname === "/faq"
+                      ? "text-brand-accent bg-white/5"
+                      : "text-brand-muted hover:text-brand-text hover:bg-white/5"
+                  }`}
+                >
+                  Get Involved
+                  <svg
+                    className="w-3 h-3 pt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {/* Dropdown Content */}
+                {isGetInvolvedOpen && (
+                  <div className="absolute top-full left-0 mt-0 w-48 bg-brand-dark border border-white/10 rounded-xl shadow-xl overflow-hidden py-2 animate-fade-in-up">
+                    {getInvolvedLinks.map((link) => (
+                      <Link
+                        key={link.name}
+                        to={link.path}
+                        className="block px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* RIGHT SIDE: Profile Section */}
+          {/* --- RIGHT SIDE: Profile Section (UNCHANGED) --- */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                {/* 1. SPROUT ICON (Stuck on Navbar) - Links to My Journey */}
                 {!isAdmin && (
                   <Link
                     to="/journey"
@@ -121,7 +180,6 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                {/* 2. PROFILE AVATAR & DROPDOWN */}
                 <div
                   className="relative pl-4 border-l border-white/10"
                   ref={profileMenuRef}
@@ -160,7 +218,6 @@ const Navbar = () => {
                     </div>
                   </button>
 
-                  {/* DROPDOWN MENU */}
                   {isProfileMenuOpen && (
                     <div className="absolute right-0 mt-3 w-48 bg-brand-gray border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 animate-fade-in-up origin-top-right">
                       <div className="px-4 py-2 border-b border-white/5">
@@ -182,7 +239,7 @@ const Navbar = () => {
                         </Link>
                       ) : (
                         <Link
-                          to="/dashboard" /* ✅ FIXED: Points to /dashboard for members */
+                          to="/dashboard"
                           className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
@@ -217,7 +274,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* --- MOBILE MENU BUTTON --- */}
           <div className="-mr-2 flex md:hidden gap-4 items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -241,11 +298,12 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Content */}
+      {/* --- MOBILE MENU CONTENT --- */}
       {isOpen && (
-        <div className="md:hidden bg-brand-gray/95 backdrop-blur-xl border-b border-brand-border">
+        <div className="md:hidden bg-brand-gray/95 backdrop-blur-xl border-b border-brand-border h-screen overflow-y-auto pb-20">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
+            {/* Standard Links */}
+            {mainLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
@@ -260,6 +318,24 @@ const Navbar = () => {
               </Link>
             ))}
 
+            {/* ✅ MOBILE DROPDOWN: Get Involved */}
+            <div className="px-3 py-2 space-y-1 bg-white/5 rounded-xl my-2">
+              <p className="text-xs uppercase text-brand-accent font-bold tracking-widest mb-2 px-4">
+                Get Involved
+              </p>
+              {getInvolvedLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className="block px-4 py-2 text-base font-medium text-white hover:text-brand-accent"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Profile Section (Unchanged) */}
             <div className="pt-4 mt-4 border-t border-white/5 space-y-3">
               {user ? (
                 <>
