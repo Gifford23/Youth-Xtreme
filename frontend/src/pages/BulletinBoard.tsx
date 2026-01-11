@@ -243,7 +243,7 @@ const BulletinBoard = () => {
                     layout
                     initial={{ opacity: 0, scale: 0.9, y: 50 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, opacity: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     whileHover={{ scale: 1.02, rotate: 0, zIndex: 10 }}
                     className={`break-inside-avoid relative p-6 md:p-8 rounded-sm ${style.container} transition-all duration-300`}
                   >
