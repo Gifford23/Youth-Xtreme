@@ -1,13 +1,37 @@
 // src/lib/resourcesData.ts
 
+// --- IMAGE IMPORTS ---
+// Make sure these files exist in src/assets/resources/
+import ProdigalImg from "../assets/resources/prodigal.jpg";
+import JobImg from "../assets/resources/job.jpg";
+import JosephImg from "../assets/resources/joseph.jpg";
+import SolomonImg from "../assets/resources/solomon.jpg";
+import PrayerImg from "../assets/resources/prayer.jpg";
+import FruitsImg from "../assets/resources/fruit-of-the-spirit.jpg";
+import AdamEveImg from "../assets/resources/adam-eve.jpg";
+import JonahImg from "../assets/resources/jonah.jpg";
+import AbrahamImg from "../assets/resources/abraham.jpg";
+import IsaiahImg from "../assets/resources/isaiah.jpg";
+import JeremiahImg from "../assets/resources/jeremiah.jpg";
+import DanielImg from "../assets/resources/daniel.jpg";
+import ElijahImg from "../assets/resources/elijah.jpg";
+import SamsonImg from "../assets/resources/samson.jpg";
+import EstherImg from "../assets/resources/esther.jpg";
+import SamuelImg from "../assets/resources/samuel.jpg";
+import PeterImg from "../assets/resources/peter.jpg";
+import RuthImg from "../assets/resources/ruth.jpg";
+import PaulImg from "../assets/resources/paul.jpg";
+import GideonImg from "../assets/resources/gideon.jpg";
+import ThomasImg from "../assets/resources/thomas.jpg";
+import TimothyImg from "../assets/resources/timothy.jpg";
+
 export const resourcesData = [
-  // --- ORIGINAL ENTRIES ---
   {
     id: 1,
     title: "The Rebel's Return (Prodigal Son)",
     category: "Bible Stories",
     scripture: "Luke 15:11-32",
-    image: "https://michaelkelley.co/wp-content/uploads/2019/06/Prodigal.jpg",
+    image: ProdigalImg, // ✅ Updated
     summary:
       "He wanted freedom, took the cash, and ghosted his family. But when he hit rock bottom, he found something he didn't expect: a party.",
     readTime: "6 min read",
@@ -31,8 +55,7 @@ export const resourcesData = [
     title: "When Life Hits Different (Job)",
     category: "Bible Stories",
     scripture: "Book of Job",
-    image:
-      "https://cms-imgp.jw-cdn.org/img/p/502019375/univ/wpub/502019375_univ_lsr_lg.jpg",
+    image: JobImg, // ✅ Updated
     summary:
       "He lost his cash, his kids, and his health in one weekend. How do you trust God when your life literally falls apart?",
     readTime: "8 min read",
@@ -53,11 +76,10 @@ export const resourcesData = [
   },
   {
     id: 3,
-    title: "Betrayed But Not Broken (Joseph)", // Changed title to be more inspiring
+    title: "Betrayed But Not Broken (Joseph)",
     category: "Bible Stories",
     scripture: "Genesis 37-50",
-    image:
-      "https://media.swncdn.com/cms/BST/49183-Joseph_Sold_by_His_Brothers.800w.tn.jpg",
+    image: JosephImg, // ✅ Updated
     summary:
       "Hated by his brothers, sold into slavery, and thrown in prison for a crime he didn't commit. A masterclass on trusting God when life isn't fair.",
     readTime: "12 min read",
@@ -78,16 +100,12 @@ export const resourcesData = [
       </div>
     `,
   },
-
-  // ... [Other entries] ...
-
   {
     id: 14,
     title: "The Wisest Fool (King Solomon)",
     category: "Bible Stories",
     scripture: "1 Kings 3-11",
-    image:
-      "https://i.pinimg.com/1200x/33/f6/2a/33f62ab329a75050846a643516dc3a41.jpg",
+    image: SolomonImg, // ✅ Updated
     summary:
       "He possessed everything a person could dream of—wealth, power, and divine wisdom. But his life proves that a divided heart leads to a tragic end.",
     readTime: "7 min read",
@@ -108,14 +126,12 @@ export const resourcesData = [
       </div>
     `,
   },
-
   {
     id: 5,
     title: "DMing God (How to Pray)",
     category: "Study Guides",
     scripture: "Matthew 6",
-    image:
-      "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=800",
+    image: PrayerImg, // ✅ Updated
     summary:
       "Prayer isn't about fancy words or thou/art/hast. It's a DM to your Creator. Here is how to keep the conversation real.",
     readTime: "5 min read",
@@ -142,8 +158,7 @@ export const resourcesData = [
     title: "The Vibe Check (Fruits of the Spirit)",
     category: "Devotionals",
     scripture: "Galatians 5:22-23",
-    image:
-      "https://i.pinimg.com/1200x/ef/4c/8d/ef4c8de6fca4e158ed7315a2cba5a3d9.jpg",
+    image: FruitsImg, // ✅ Updated
     summary:
       "How do people know you're a Christian? It's not your bio or your playlist. It's your fruit. Let's check your spiritual vitals.",
     readTime: "7 min read",
@@ -165,8 +180,7 @@ export const resourcesData = [
     title: "The Original Glitch (Adam & Eve)",
     category: "Bible Stories",
     scripture: "Genesis 3",
-    image:
-      "https://i.pinimg.com/736x/d4/6e/b3/d46eb30dd299cd3f0803f2a50987259e.jpg",
+    image: AdamEveImg, // ✅ Updated
     summary:
       "They had one job. One rule. And a snake who claimed he knew better. This is the moment everything broke.",
     readTime: "5 min read",
@@ -190,8 +204,7 @@ export const resourcesData = [
     title: "Ghosting God (Jonah)",
     category: "Bible Stories",
     scripture: "Book of Jonah",
-    image:
-      "https://i.pinimg.com/736x/2f/88/fe/2f88fe2973dc9c7882437efaa024e2eb.jpg",
+    image: JonahImg, // ✅ Updated
     summary:
       "God gave him a mission. He bought a ticket to the opposite side of the world. But you can't outrun your calling.",
     readTime: "7 min read",
@@ -215,8 +228,7 @@ export const resourcesData = [
     title: "Trust the Process (Abraham)",
     category: "Bible Stories",
     scripture: "Genesis 12-22",
-    image:
-      "https://i.pinimg.com/736x/5e/51/f3/5e51f34112ec4b9343df29add945ba7f.jpg",
+    image: AbrahamImg, // ✅ Updated
     summary:
       "Imagine moving without a GPS destination. Abraham left everything on a promise that took 25 years to fulfill.",
     readTime: "8 min read",
@@ -240,8 +252,7 @@ export const resourcesData = [
     title: "Here I Am, Send Me (Isaiah)",
     category: "Bible Stories",
     scripture: "Isaiah 6",
-    image:
-      "https://i.pinimg.com/736x/ee/ff/38/eeff3896c318b0a147082a294f164f26.jpg",
+    image: IsaiahImg, // ✅ Updated
     summary:
       "While everyone else was comfortable, Isaiah saw a vision that changed everything. He volunteered for the hardest job in the world.",
     readTime: "6 min read",
@@ -265,8 +276,7 @@ export const resourcesData = [
     title: "Too Young? Nah. (Jeremiah)",
     category: "Bible Stories",
     scripture: "Jeremiah 1",
-    image:
-      "https://i.pinimg.com/736x/d7/eb/0f/d7eb0f125ea184bd4144cf6402e34518.jpg",
+    image: JeremiahImg, // ✅ Updated
     summary:
       "He tried to use the 'I'm just a kid' excuse. God wasn't having it. The story of battling Imposter Syndrome.",
     readTime: "6 min read",
@@ -290,8 +300,7 @@ export const resourcesData = [
     title: "Built Different (Daniel)",
     category: "Bible Stories",
     scripture: "Daniel 1-6",
-    image:
-      "https://i.pinimg.com/736x/1e/b3/c8/1eb3c83fe41fce2191c15f5193e6e7f7.jpg",
+    image: DanielImg, // ✅ Updated
     summary:
       "Kidnapped, renamed, and pressured to fit in. But Daniel refused to cancel his convictions, even if it meant a den of lions.",
     readTime: "9 min read",
@@ -315,8 +324,7 @@ export const resourcesData = [
     title: "The 1v450 Clutch (Elijah)",
     category: "Bible Stories",
     scripture: "1 Kings 18",
-    image:
-      "https://i.pinimg.com/736x/00/2c/29/002c29b7f6f3dae12531617a72b67d5d.jpg",
+    image: ElijahImg, // ✅ Updated
     summary:
       "One prophet of God vs. 450 prophets of Baal. The ultimate showdown on Mount Carmel involving fire, water, and a lot of confidence.",
     readTime: "8 min read",
@@ -335,15 +343,12 @@ export const resourcesData = [
       </div>
     `,
   },
-  // --- NEW REQUESTED CHARACTERS ---
-
   {
     id: 15,
     title: "Strong Body, Weak Will (Samson)",
     category: "Bible Stories",
     scripture: "Judges 13-16",
-    image:
-      "https://i.pinimg.com/736x/6c/49/11/6c4911d31d09f5bf710d434024dd176c.jpg",
+    image: SamsonImg, // ✅ Updated
     summary:
       "He could kill a lion with his bare hands, but he couldn't control his own lust. A tragic story of wasted potential and final redemption.",
     readTime: "8 min read",
@@ -369,8 +374,7 @@ export const resourcesData = [
     title: "For Such a Time as This (Queen Esther)",
     category: "Bible Stories",
     scripture: "Book of Esther",
-    image:
-      "https://i.pinimg.com/736x/d7/c5/66/d7c56607a88e7e5f2c0c02ff5168f632.jpg",
+    image: EstherImg, // ✅ Updated
     summary:
       "A beauty pageant winner turns into a warrior queen. She risked her life to save her people from genocide.",
     readTime: "9 min read",
@@ -396,8 +400,7 @@ export const resourcesData = [
     title: "The Voice in the Night (Samuel)",
     category: "Bible Stories",
     scripture: "1 Samuel 3",
-    image:
-      "https://i.pinimg.com/1200x/ef/75/82/ef7582c92557755c9639741d2995b856.jpg",
+    image: SamuelImg, // ✅ Updated
     summary:
       "In a time when 'the word of the Lord was rare,' a young boy learned to listen. He became the bridge between the judges and the kings.",
     readTime: "6 min read",
@@ -423,8 +426,7 @@ export const resourcesData = [
     title: "From Coward to Rock (Peter)",
     category: "Bible Stories",
     scripture: "Luke 22, Acts 2",
-    image:
-      "https://i.pinimg.com/1200x/50/1e/3c/501e3c8f321afc2ecc2291bb1996e7cb.jpg",
+    image: PeterImg, // ✅ Updated
     summary:
       "He walked on water (briefly) and denied Jesus (three times). But Jesus turned this impulsive fisherman into the leader of the Church.",
     readTime: "8 min read",
@@ -450,8 +452,7 @@ export const resourcesData = [
     title: "Loyalty Over Everything (Ruth)",
     category: "Bible Stories",
     scripture: "Book of Ruth",
-    image:
-      "https://i.pinimg.com/1200x/47/8d/9f/478d9f85e9432197bca48c72df10e487.jpg",
+    image: RuthImg, // ✅ Updated
     summary:
       "A young widow leaves her country to stick with her mother-in-law. A story of loyalty, romance, and the lineage of Jesus.",
     readTime: "7 min read",
@@ -477,8 +478,7 @@ export const resourcesData = [
     title: "The Great U-Turn (Paul)",
     category: "Bible Stories",
     scripture: "Acts 9",
-    image:
-      "https://i.pinimg.com/736x/a1/11/92/a11192fa70693992b7a7c92c2765fae1.jpg",
+    image: PaulImg, // ✅ Updated
     summary:
       "He was a religious terrorist, hunting down Christians. Then he met Jesus on a dirt road. The greatest enemy became the greatest missionary.",
     readTime: "9 min read",
@@ -504,8 +504,7 @@ export const resourcesData = [
     title: "Scared but Obedient (Gideon)",
     category: "Bible Stories",
     scripture: "Judges 6-7",
-    image:
-      "https://i.pinimg.com/736x/56/2b/8c/562b8c8e70e85c80c071dacefb526eb1.jpg",
+    image: GideonImg, // ✅ Updated
     summary:
       "He was hiding in a winepress when the angel called him a 'Mighty Warrior.' He defeated an army with trumpets and jars.",
     readTime: "8 min read",
@@ -531,8 +530,7 @@ export const resourcesData = [
     title: "I Need Proof (Doubting Thomas)",
     category: "Bible Stories",
     scripture: "John 20",
-    image:
-      "https://i.pinimg.com/1200x/52/ba/2a/52ba2a15f7941eeaa00a8ab75dfa7075.jpg",
+    image: ThomasImg, // ✅ Updated
     summary:
       "He missed the meeting where Jesus appeared. He said, 'Unless I see the holes in his hands, I won't believe.' A story for the skeptics.",
     readTime: "5 min read",
@@ -558,8 +556,7 @@ export const resourcesData = [
     title: "The Young Leader (Timothy)",
     category: "Bible Stories",
     scripture: "1 & 2 Timothy",
-    image:
-      "https://i.pinimg.com/736x/18/5a/8d/185a8d44c5358eb04bc6bce35143b0a2.jpg",
+    image: TimothyImg, // ✅ Updated
     summary:
       "Paul's protégé. He struggled with a 'spirit of fear' and stomach issues, yet he was entrusted to lead the church in Ephesus.",
     readTime: "6 min read",
