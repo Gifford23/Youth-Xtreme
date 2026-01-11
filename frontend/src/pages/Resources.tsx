@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { resourcesData } from "../lib/resourcesData"; // ✅ Uses the shared data file
+import { resourcesData } from "../lib/resourcesData";
 
 const Resources = () => {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -19,7 +19,6 @@ const Resources = () => {
   const categories = ["All", "Bible Stories", "Study Guides", "Devotionals"];
 
   return (
-    // ✅ CHANGED pt-24 to pt-32 for better header spacing
     <div className="min-h-screen bg-brand-dark pt-32 pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* HEADER SECTION */}
@@ -78,7 +77,7 @@ const Resources = () => {
         </div>
 
         {/* RESOURCE GRID */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
           {filteredResources.map((resource) => (
             <Link
               to={`/resources/${resource.id}`}
@@ -168,6 +167,120 @@ const Resources = () => {
             </p>
           </div>
         )}
+
+        {/* ✅ NEW SECTION: EXTERNAL TOOLS */}
+        <div className="border-t border-white/10 pt-20">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-4">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
+                Trusted Study Tools
+              </h2>
+              <p className="text-brand-muted">
+                External resources we recommend for deeper theology.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* 1. The Bible Project */}
+            <a
+              href="https://bibleproject.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="group relative h-64 rounded-3xl overflow-hidden border border-white/10 hover:border-brand-accent/50 transition-all shadow-xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/40 z-10"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2573&auto=format&fit=crop')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110"></div>
+
+              <div className="absolute bottom-0 left-0 w-full p-8 z-20">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white text-black font-bold px-3 py-1 rounded text-xs uppercase tracking-widest">
+                    Watch
+                  </div>
+                  <h3 className="text-2xl font-bold text-white group-hover:text-brand-accent transition-colors">
+                    The Bible Project
+                  </h3>
+                </div>
+                <p className="text-gray-300 text-sm mb-4 max-w-md">
+                  Experience the Bible as a unified story that leads to Jesus
+                  through beautiful animated videos.
+                </p>
+                <span className="inline-flex items-center gap-2 text-white font-bold text-sm border-b border-brand-accent pb-0.5">
+                  Visit Website
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </a>
+
+            {/* 2. GotQuestions */}
+            <a
+              href="https://www.gotquestions.org/"
+              target="_blank"
+              rel="noreferrer"
+              className="group relative h-64 rounded-3xl overflow-hidden border border-white/10 hover:border-blue-400/50 transition-all shadow-xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/40 z-10"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110"></div>
+
+              <div className="absolute bottom-0 left-0 w-full p-8 z-20">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-blue-600 text-white font-bold px-3 py-1 rounded text-xs uppercase tracking-widest">
+                    Ask
+                  </div>
+                  <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                    GotQuestions.org
+                  </h3>
+                </div>
+                <p className="text-gray-300 text-sm mb-4 max-w-md">
+                  Have a tough question? Find biblical, theological, and
+                  practical answers instantly.
+                </p>
+                <span className="inline-flex items-center gap-2 text-white font-bold text-sm border-b border-blue-400 pb-0.5">
+                  Search Answers
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          </div>
+
+          {/* ✅ FORMAL CREDITS / DISCLAIMER */}
+          <div className="mt-12 border-t border-white/5 pt-8 text-center md:text-left">
+            <p className="text-xs text-brand-muted/50 uppercase tracking-widest font-bold mb-2">
+              Resource Credits & Disclaimer
+            </p>
+            <p className="text-xs text-brand-muted max-w-3xl leading-relaxed mx-auto md:mx-0">
+              "The Bible Project" and "GotQuestions" are independent
+              organizations. Youth Xtreme is not affiliated with these
+              ministries but recommends them as trusted tools for spiritual
+              growth. Content summaries above are original to Youth Xtreme.
+              Scripture references are taken from the Holy Bible.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
