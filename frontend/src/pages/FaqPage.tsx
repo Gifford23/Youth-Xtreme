@@ -139,7 +139,7 @@ const FaqPage = () => {
       <motion.div
         animate={{ x: [0, 50, 0], opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-[10%] right-[-5%] w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[128px] pointer-events-none"
+        className="absolute bottom-[10%] left-[-5%] w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[128px] pointer-events-none"
       />
 
       <div className="max-w-4xl mx-auto relative z-10">
@@ -241,13 +241,14 @@ const FaqPage = () => {
             animate={{ opacity: 1, x: 0, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-6 right-6 z-50 w-full max-w-[340px] px-4 sm:px-0"
+            className="fixed bottom-6 left-6 z-50 w-full max-w-[340px] px-4 sm:px-0"
           >
             <div className="relative bg-brand-gray/90 backdrop-blur-xl border border-brand-accent/30 p-5 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center gap-4">
               {/* Close Button */}
               <button
                 onClick={() => setShowPopup(false)}
-                className="absolute top-2 right-2 text-white/30 hover:text-white transition-colors p-1"
+                className="absolute top-2 left
+                -2 text-white/30 hover:text-white transition-colors p-1"
               >
                 <svg
                   className="w-4 h-4"

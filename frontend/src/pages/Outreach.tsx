@@ -16,7 +16,7 @@ const outreachTabs = [
       "Lunch Break Life Groups",
       "University Prayer Walks",
       "Student Leader Training",
-      "Campus Tours",
+      "Campus Hangouts",
     ],
   },
   {
