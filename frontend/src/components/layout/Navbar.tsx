@@ -64,6 +64,7 @@ const Navbar = () => {
   const mainLinks = [
     { name: "Home", path: "/" },
     { name: "Events", path: "/events" },
+    { name: "Bulletin", path: "/bulletin" },
     { name: "Calendar", path: "/calendar" },
     // ✅ FIXED: Points to #moments anchor so it scrolls smoothly on Home
     { name: "Media", path: "/media" },

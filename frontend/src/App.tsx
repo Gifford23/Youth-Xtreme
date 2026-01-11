@@ -35,6 +35,7 @@ import UserDashboard from "./pages/UserDashboard";
 import InviteGenerator from "./pages/InviteGenerator";
 import Dashboard from "./pages/Dashboard";
 import Outreach from "./pages/Outreach";
+import BulletinBoard from "./pages/BulletinBoard";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -154,6 +155,14 @@ const AnimatedRoutes = () => {
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route
+              path="/bulletin"
+              element={
+                <ProtectedRoute>
+                  <BulletinBoard />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/resources"
               element={
