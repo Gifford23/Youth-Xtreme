@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+// ✅ Import the local image here
+import MissionImg from "../../assets/mission/mission.jpg";
 
 const VIBES = [
   {
@@ -62,8 +64,9 @@ const Mission = () => {
 
           {/* Right: Visual (Adjusted to 550px for a sleek, leveled look) */}
           <div className="relative h-[550px] rounded-3xl overflow-hidden group shadow-xl">
+            {/* ✅ Use the imported variable here */}
             <img
-              src="https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/517059800_1039160668294515_4056897022503255003_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=833d8c&_nc_ohc=dkeXwulZRzMQ7kNvwGGMH3o&_nc_oc=AdlXP7XA2rA4sBnXum5zpEQQrNlVc0C8YswAY8_OhRsPRzuorklUzUoLhuB67d7RJT8&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=w-szO96T5IJEicPURSVpgw&oh=00_AfoBHgWaL17MjJp_8YnIT2iFIVH3sg27Kp06YV-9oh7phQ&oe=6965074E"
+              src={MissionImg}
               alt="Worship Vibe"
               className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
             />
@@ -80,7 +83,7 @@ const Mission = () => {
                       Next Gathering
                     </p>
                     <p className="text-white font-bold text-xl group-hover/card:text-brand-accent transition-colors">
-                      This Friday @ 6PM
+                      This Saturday @ 6PM
                     </p>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold group-hover/card:scale-110 transition-transform">
