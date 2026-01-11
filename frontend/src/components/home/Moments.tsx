@@ -1,57 +1,38 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useState, useEffect } from "react";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "../../lib/firebase";
 
-// ✅ Import local images
-// Make sure these exist in src/assets/moments/
-import Moment1 from "../../assets/moments/moment1.jpg";
-import Moment2 from "../../assets/moments/moment2.jpg";
-import Moment3 from "../../assets/moments/moment3.jpg";
-import Moment4 from "../../assets/moments/moment4.jpg";
-import Moment5 from "../../assets/moments/moment5.jpg";
-import Moment6 from "../../assets/moments/moment6.jpg";
-
-const MOMENTS = [
-  {
-    id: 1,
-    url: Moment1, // ✅ Used variable
-    caption: "Worship Night",
-  },
-  {
-    id: 2,
-    url: Moment2,
-    caption: "Huddle",
-  },
-  {
-    id: 3,
-    url: Moment3,
-    caption: "Group Pictures",
-  },
-  {
-    id: 4,
-    url: Moment4,
-    caption: "Moments",
-  },
-  {
-    id: 5,
-    url: Moment5,
-    caption: "Commitments to MMM",
-  },
-  {
-    id: 6,
-    url: Moment6,
-    caption: "Prayer",
-  },
-];
+interface Moment {
+  id: string;
+  url: string;
+  caption: string;
+}
 
 const Moments = () => {
-  const scrollRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: scrollRef,
-    offset: ["start end", "end start"],
-  });
+  const [moments, setMoments] = useState<Moment[]>([]);
 
-  // Parallax Effect: Moves the row slightly left as you scroll down
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
+  // 1. Fetch Moments
+  useEffect(() => {
+    if (!db) return;
+
+    const q = query(collection(db, "moments"), orderBy("created_at", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedMoments = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Moment[];
+      setMoments(fetchedMoments);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Prepare Infinite List
+  // We duplicate the list to create a seamless "infinite" loop effect
+  const displayMoments =
+    moments.length > 0 ? [...moments, ...moments, ...moments] : [];
+
+  if (moments.length === 0) return null;
 
   return (
     <div className="py-24 bg-brand-dark overflow-hidden border-t border-white/5 relative">
@@ -87,16 +68,15 @@ const Moments = () => {
         </a>
       </div>
 
-      {/* HORIZONTAL SCROLL AREA */}
-      <div ref={scrollRef} className="relative w-full">
-        <motion.div
-          style={{ x }} // Connects to the parallax hook
-          className="flex gap-6 px-6 lg:px-8 w-max hover:pause"
-        >
-          {MOMENTS.map((moment) => (
+      {/* --- SMOOTH SCROLLING MARQUEE --- */}
+      <div className="relative w-full overflow-hidden marquee-container">
+        {/* Using standard div with CSS animation for perfect pause/resume behavior */}
+        <div className="flex gap-6 px-6 lg:px-8 w-max marquee-content">
+          {displayMoments.map((moment, index) => (
             <div
-              key={moment.id}
-              className="relative group w-72 h-96 rounded-2xl overflow-hidden cursor-pointer"
+              // Use index in key because IDs are duplicated
+              key={`${moment.id}-${index}`}
+              className="relative group w-72 h-96 rounded-2xl overflow-hidden cursor-pointer bg-neutral-900 shrink-0"
             >
               {/* Image */}
               <img
@@ -117,27 +97,35 @@ const Moments = () => {
               </div>
             </div>
           ))}
-
-          {/* Duplicate list for "infinite" feeling */}
-          {MOMENTS.map((moment) => (
-            <div
-              key={`${moment.id}-duplicate`}
-              className="relative group w-72 h-96 rounded-2xl overflow-hidden cursor-pointer hidden md:block opacity-50"
-            >
-              <img
-                src={moment.url}
-                alt={moment.caption}
-                className="w-full h-full object-cover grayscale"
-              />
-            </div>
-          ))}
-        </motion.div>
+        </div>
 
         {/* Mobile Swipe Hint */}
-        <div className="absolute bottom-4 right-8 md:hidden text-white/50 text-xs font-bold animate-pulse">
+        <div className="absolute bottom-4 right-8 md:hidden text-white/50 text-xs font-bold animate-pulse pointer-events-none">
           ← Swipe to see more
         </div>
       </div>
+
+      {/* ✅ CSS STYLES FOR SMOOTH MARQUEE */}
+      <style>{`
+        .marquee-content {
+          animation: scroll 40s linear infinite;
+        }
+        
+        /* Pause on hover without resetting position */
+        .marquee-container:hover .marquee-content {
+          animation-play-state: paused;
+        }
+
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            /* Move by 1/3rd because we tripled the list */
+            transform: translateX(-33.333%);
+          }
+        }
+      `}</style>
     </div>
   );
 };

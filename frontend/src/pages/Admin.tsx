@@ -7,16 +7,17 @@ import {
   orderBy,
   onSnapshot,
   deleteDoc,
+  updateDoc, // ✅ Added for editing
   doc,
-  getDoc, // ✅ Import getDoc
+  getDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth"; // ✅ Import Auth Listener
-import { db, auth } from "../lib/firebase"; // ✅ Import Auth
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../lib/firebase";
 import { Link } from "react-router-dom";
 import { logActivity } from "../utils/logger";
-import EditProfileModal from "../components/profile/EditProfileModal"; // ✅ Import Modal
+import EditProfileModal from "../components/profile/EditProfileModal";
 
-// Types
+// --- TYPES ---
 interface AppEvent {
   id: string;
   title: string;
@@ -26,6 +27,13 @@ interface AppEvent {
   category: string;
   imageUrl: string;
   description: string;
+}
+
+// ✅ New Type for Moments
+interface Moment {
+  id: string;
+  url: string;
+  caption: string;
 }
 
 const Admin = () => {
@@ -40,7 +48,13 @@ const Admin = () => {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  // --- ✅ STATE FOR ADMIN PROFILE ---
+  // --- ✅ STATE FOR MOMENTS (PHOTOS) ---
+  const [momentsList, setMomentsList] = useState<Moment[]>([]);
+  const [loadingMoments, setLoadingMoments] = useState(false);
+  const [momentForm, setMomentForm] = useState({ url: "", caption: "" });
+  const [editingMomentId, setEditingMomentId] = useState<string | null>(null);
+
+  // --- STATE FOR ADMIN PROFILE ---
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -56,9 +70,9 @@ const Admin = () => {
     description: "",
   });
 
-  // 1. Fetch Events & Logs & ✅ User Profile
+  // 1. MAIN DATA FETCHING EFFECT
   useEffect(() => {
-    // ✅ Fetch Admin Profile Data
+    // Fetch Admin Profile Data
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
@@ -72,6 +86,7 @@ const Admin = () => {
       }
     });
 
+    // Fetch Events
     if (activeTab === "all events") {
       setLoadingList(true);
       if (db) {
@@ -89,12 +104,12 @@ const Admin = () => {
         });
         return () => {
           unsub();
-          unsubAuth(); // Cleanup auth listener
+          unsubAuth();
         };
       }
     }
 
-    // 2. Fetch Activity Logs
+    // Fetch Activity Logs
     if (activeTab === "activity logs") {
       setLoadingLogs(true);
       if (db) {
@@ -117,10 +132,34 @@ const Admin = () => {
       }
     }
 
+    // ✅ Fetch Moments (Photos Tab)
+    if (activeTab === "photos") {
+      setLoadingMoments(true);
+      if (db) {
+        const q = query(
+          collection(db, "moments"),
+          orderBy("created_at", "desc")
+        );
+        const unsub = onSnapshot(q, (snap) => {
+          const data = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })) as Moment[];
+          setMomentsList(data);
+          setLoadingMoments(false);
+        });
+        return () => {
+          unsub();
+          unsubAuth();
+        };
+      }
+    }
+
     return () => unsubAuth();
   }, [activeTab]);
 
-  // 2. Handle Create Event
+  // --- EVENT HANDLERS ---
+
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db) return;
@@ -137,7 +176,6 @@ const Admin = () => {
         created_at: serverTimestamp(),
       });
 
-      // ✅ LOG ACTIVITY
       await logActivity(
         "Created Event",
         `Created event: ${eventForm.title} at ${eventForm.location}`
@@ -160,7 +198,6 @@ const Admin = () => {
     }
   };
 
-  // 3. Handle Delete Event
   const handleDelete = async (id: string) => {
     if (
       window.confirm(
@@ -169,7 +206,6 @@ const Admin = () => {
     ) {
       try {
         await deleteDoc(doc(db!, "events", id));
-        // ✅ LOG ACTIVITY
         await logActivity("Deleted Event", `Deleted event ID: ${id}`);
       } catch (error) {
         alert("Error deleting event");
@@ -177,7 +213,70 @@ const Admin = () => {
     }
   };
 
-  // 4. Handle Print Attendance Sheet
+  // --- ✅ MOMENTS HANDLERS (CRUD) ---
+
+  const handleMomentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db) return;
+
+    try {
+      if (editingMomentId) {
+        // UPDATE EXISTING
+        const momentRef = doc(db, "moments", editingMomentId);
+        await updateDoc(momentRef, {
+          url: momentForm.url,
+          caption: momentForm.caption,
+          updated_at: serverTimestamp(),
+        });
+        await logActivity(
+          "Updated Moment",
+          `Updated moment ID: ${editingMomentId}`
+        );
+        alert("✅ Moment Updated!");
+        setEditingMomentId(null);
+      } else {
+        // CREATE NEW
+        await addDoc(collection(db, "moments"), {
+          url: momentForm.url,
+          caption: momentForm.caption,
+          created_at: serverTimestamp(),
+        });
+        await logActivity(
+          "Created Moment",
+          `Added new moment: ${momentForm.caption}`
+        );
+        alert("✅ Moment Added!");
+      }
+      setMomentForm({ url: "", caption: "" });
+    } catch (error) {
+      console.error(error);
+      alert("❌ Error saving moment");
+    }
+  };
+
+  const handleDeleteMoment = async (id: string) => {
+    if (confirm("Delete this moment? It will be removed from the homepage.")) {
+      try {
+        await deleteDoc(doc(db!, "moments", id));
+        await logActivity("Deleted Moment", `Deleted moment ID: ${id}`);
+      } catch (error) {
+        console.error("Error deleting moment:", error);
+      }
+    }
+  };
+
+  const handleEditMoment = (moment: Moment) => {
+    setMomentForm({ url: moment.url, caption: moment.caption });
+    setEditingMomentId(moment.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingMomentId(null);
+    setMomentForm({ url: "", caption: "" });
+  };
+
+  // --- PRINT FUNCTION ---
   const handlePrintSheet = (event: AppEvent) => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return alert("Please allow popups to print");
@@ -272,7 +371,7 @@ const Admin = () => {
     }, 500);
   };
 
-  // 5. Filter Logic
+  // Filter Logic
   const filteredEvents = eventsList.filter(
     (event) =>
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -281,7 +380,7 @@ const Admin = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
-      {/* ✅ ADMIN EDIT PROFILE MODAL */}
+      {/* ADMIN EDIT PROFILE MODAL */}
       {showProfileModal && currentUser && (
         <EditProfileModal
           user={currentUser}
@@ -291,7 +390,6 @@ const Admin = () => {
       )}
 
       {/* Header */}
-      {/* ✅ CHANGED TO FLEX CONTAINER TO HOLD THE BUTTON */}
       <div className="mb-10 pt-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-display font-bold text-white mb-2">
@@ -302,7 +400,7 @@ const Admin = () => {
           </p>
         </div>
 
-        {/* ✅ NEW: EDIT PROFILE BUTTON */}
+        {/* EDIT PROFILE BUTTON */}
         <button
           onClick={() => setShowProfileModal(true)}
           className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
@@ -335,7 +433,7 @@ const Admin = () => {
         </button>
       </div>
 
-      {/* Quick Actions (RESTORED TO 3 COLUMNS) */}
+      {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-4 mb-12">
         <Link
           to="/scanner"
@@ -420,7 +518,7 @@ const Admin = () => {
 
       {/* Main Tab Navigation */}
       <div className="flex gap-6 border-b border-white/10 pb-4 mb-8 overflow-x-auto">
-        {["new event", "all events", "activity logs", "photos", "content"].map(
+        {["new event", "all events", "photos", "activity logs", "content"].map(
           (tab) => (
             <button
               key={tab}
@@ -431,7 +529,8 @@ const Admin = () => {
                   : "text-brand-muted hover:text-white"
               }`}
             >
-              {tab}
+              {/* ✅ Renamed tab label in UI, kept key as "photos" */}
+              {tab === "photos" ? "Moments" : tab}
               {activeTab === tab && (
                 <span className="absolute -bottom-4 left-0 w-full h-0.5 bg-brand-accent shadow-[0_0_10px_rgba(204,255,0,0.5)]"></span>
               )}
@@ -842,6 +941,136 @@ const Admin = () => {
         </div>
       )}
 
+      {/* --- ✅ TAB 3: MOMENTS MANAGER (Replaces Photos Placeholder) --- */}
+      {activeTab === "photos" && (
+        <div className="grid lg:grid-cols-3 gap-8 items-start animate-fade-in">
+          {/* LEFT: Moment Form */}
+          <div className="lg:col-span-1">
+            <div className="bg-brand-gray/50 rounded-3xl border border-white/5 p-6 shadow-xl sticky top-8">
+              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                {editingMomentId ? "✏️ Edit Moment" : "📸 Add New Moment"}
+              </h3>
+
+              <form onSubmit={handleMomentSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-bold uppercase mb-2">
+                    Image URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-accent focus:outline-none text-sm"
+                    value={momentForm.url}
+                    onChange={(e) =>
+                      setMomentForm({ ...momentForm, url: e.target.value })
+                    }
+                    required
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Tip: Use a public image link (e.g., from your storage or
+                    external).
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-brand-muted text-xs font-bold uppercase mb-2">
+                    Caption
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Worship Night"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-accent focus:outline-none text-sm"
+                    value={momentForm.caption}
+                    onChange={(e) =>
+                      setMomentForm({ ...momentForm, caption: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="submit"
+                    className={`flex-1 font-bold text-brand-dark py-3 rounded-xl transition-all ${
+                      editingMomentId
+                        ? "bg-yellow-400 hover:bg-yellow-300"
+                        : "bg-brand-accent hover:bg-white"
+                    }`}
+                  >
+                    {editingMomentId ? "Update" : "Add Moment"}
+                  </button>
+
+                  {editingMomentId && (
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="px-4 py-3 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* RIGHT: Moments List */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-bold text-lg mb-4">
+              Gallery Preview
+            </h3>
+
+            {loadingMoments ? (
+              <div className="text-center py-10 text-brand-muted">
+                Loading moments...
+              </div>
+            ) : momentsList.length === 0 ? (
+              <div className="bg-brand-gray/30 rounded-2xl border border-white/5 p-10 text-center text-brand-muted">
+                No moments added yet. Add one on the left!
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {momentsList.map((moment) => (
+                  <div
+                    key={moment.id}
+                    className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-black border border-white/10"
+                  >
+                    <img
+                      src={moment.url}
+                      alt={moment.caption}
+                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                    />
+
+                    {/* Overlay Actions */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEditMoment(moment)}
+                          className="p-2 bg-yellow-500/20 text-yellow-400 rounded-lg hover:bg-yellow-500 hover:text-black transition-colors"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMoment(moment.id)}
+                          className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <p className="text-white text-xs font-bold text-center">
+                        {moment.caption}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* --- ACTIVITY LOGS TAB --- */}
       {activeTab === "activity logs" && (
         <div className="bg-brand-gray/50 rounded-2xl border border-white/5 p-8">
@@ -883,16 +1112,6 @@ const Admin = () => {
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {/* --- PHOTOS TAB PLACEHOLDER --- */}
-      {activeTab === "photos" && (
-        <div className="bg-brand-gray/50 rounded-2xl border border-white/5 p-12 text-center">
-          <p className="text-brand-muted text-lg">
-            Use the <span className="text-white font-bold">Media Feed</span> tab
-            in the sidebar to manage photos.
-          </p>
         </div>
       )}
 
