@@ -11,13 +11,14 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import Logo from "../assets/Official-logo.png";
 
-// 📸 BACKGROUND IMAGES LIST
-const backgroundImages = [
-  "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop",
-  "https://scontent.fcgy3-2.fna.fbcdn.net/v/t39.30808-6/548220661_1093330282877553_682378857481286695_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=fZC_B3JBz3kQ7kNvwHEI6Ko&_nc_oc=Adlj8OEJxyxwjte9jCbUyQ6jrFFg1Ej8x6kjaTTenumUvubKo30QST5_EuggDimhlvw&_nc_zt=23&_nc_ht=scontent.fcgy3-2.fna&_nc_gid=klSTBq6s2yWc7ILLthWGwQ&oh=00_AfpQydq4w9CzFQ_PC4wZOsEphLAJnkqBo0WdJseWFADEhA&oe=6968516F",
-  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/548403682_1093330362877545_845517022796782631_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=7ALTPcpNgE0Q7kNvwGf9pD2&_nc_oc=AdkGXXKSLmx0h-hynXjEksPux2E8b6Wh-OmWSVvQWVZII_ejIsHj_DPEReRsYsjYGqg&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=gRwXPsefqKeX1HORnlgPkg&oh=00_Afr5dhiGT7M_5nrpW5a0wKdM-RwDvD0ewgtIFBdnoCdo6w&oe=69682B4E",
-  "https://scontent.fcgy3-1.fna.fbcdn.net/v/t39.30808-6/517952902_1039160238294558_8204969679638417153_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=3oLMQGPKJb4Q7kNvwHFa5aQ&_nc_oc=AdkkadOiScJ8cSfr91appngbPE5SQibW9OI9QmRwc7ZOZUU3STOSbJctmNm1K0v-CN0&_nc_zt=23&_nc_ht=scontent.fcgy3-1.fna&_nc_gid=fxWOwa22Ac9LHulFEVwEuQ&oh=00_AfpHj-U1leskRwEHaJdfKwlUo_OsUaGPlACUqMk9l2YUfQ&oe=69684105",
-];
+// ✅ IMPORT LOCAL IMAGES
+import bg1 from "../assets/login/bg-1.jpg";
+import bg2 from "../assets/login/bg-2.jpg";
+import bg3 from "../assets/login/bg-3.jpg";
+import bg4 from "../assets/login/bg-4.jpg";
+
+// 📸 BACKGROUND IMAGES LIST (Using Local Files)
+const backgroundImages = [bg1, bg2, bg3, bg4];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,13 +35,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔄 CAROUSEL EFFECT (30 Seconds)
+  // 🔄 CAROUSEL EFFECT (8 Seconds)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
         prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
       );
-    }, 30000);
+    }, 8000); // Changed to 8 seconds for better flow
 
     return () => clearInterval(interval);
   }, []);
