@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { resourcesData } from "../lib/resourcesData";
 
 const Resources = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate(); // ✅ Hook for navigation
 
   // Filter Logic
   const filteredResources = resourcesData.filter((resource) => {
@@ -17,6 +18,18 @@ const Resources = () => {
   });
 
   const categories = ["All", "Bible Stories", "Study Guides", "Devotionals"];
+
+  // ✅ FEATURE: SURPRISE ME LOGIC
+  const handleSurpriseMe = () => {
+    if (resourcesData.length === 0) return;
+
+    // Pick a random index
+    const randomIndex = Math.floor(Math.random() * resourcesData.length);
+    const randomResource = resourcesData[randomIndex];
+
+    // Navigate to that resource
+    navigate(`/resources/${randomResource.id}`);
+  };
 
   return (
     <div className="min-h-screen bg-brand-dark pt-32 pb-20 px-4">
@@ -33,9 +46,9 @@ const Resources = () => {
         </div>
 
         {/* CONTROLS (Search & Filter) */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+        <div className="flex flex-col xl:flex-row justify-between items-center gap-6 mb-12">
           {/* Categories */}
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center order-2 xl:order-1">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -51,28 +64,42 @@ const Resources = () => {
             ))}
           </div>
 
-          {/* Search Bar */}
-          <div className="relative w-full md:w-72 group">
-            <input
-              type="text"
-              placeholder="Search resources..."
-              className="w-full bg-brand-gray border border-white/10 rounded-full px-6 py-3 pl-12 text-white focus:border-brand-accent focus:outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(204,255,0,0.1)]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <svg
-              className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-brand-accent transition-colors"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Search & Surprise Me */}
+          <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto order-1 xl:order-2">
+            {/* ✅ NEW: SURPRISE ME BUTTON */}
+            <button
+              onClick={handleSurpriseMe}
+              className="group px-6 py-3 rounded-full bg-gradient-to-r from-brand-accent to-yellow-400 text-brand-dark font-bold text-sm uppercase tracking-wider hover:scale-105 transition-transform shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              <span className="text-lg group-hover:rotate-12 transition-transform">
+                🎲
+              </span>
+              Surprise Me
+            </button>
+
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-72 group">
+              <input
+                type="text"
+                placeholder="Search resources..."
+                className="w-full bg-brand-gray border border-white/10 rounded-full px-6 py-3 pl-12 text-white focus:border-brand-accent focus:outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(204,255,0,0.1)]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </svg>
+              <svg
+                className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-brand-accent transition-colors"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -168,7 +195,7 @@ const Resources = () => {
           </div>
         )}
 
-        {/* ✅ NEW SECTION: EXTERNAL TOOLS */}
+        {/* EXTERNAL TOOLS */}
         <div className="border-t border-white/10 pt-20">
           <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-4">
             <div>
@@ -182,7 +209,7 @@ const Resources = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* 1. The Bible Project */}
+            {/* The Bible Project */}
             <a
               href="https://bibleproject.com/"
               target="_blank"
@@ -224,7 +251,7 @@ const Resources = () => {
               </div>
             </a>
 
-            {/* 2. GotQuestions */}
+            {/* GotQuestions */}
             <a
               href="https://www.gotquestions.org/"
               target="_blank"
@@ -267,7 +294,7 @@ const Resources = () => {
             </a>
           </div>
 
-          {/* ✅ FORMAL CREDITS / DISCLAIMER */}
+          {/* CREDITS */}
           <div className="mt-12 border-t border-white/5 pt-8 text-center md:text-left">
             <p className="text-xs text-brand-muted/50 uppercase tracking-widest font-bold mb-2">
               Resource Credits & Disclaimer
